@@ -2,6 +2,11 @@
 
 __VERSION='0.0.0'
 
+# Configuration
+# TODO account for different PREFIX path
+__SYSTEM_CONFIG='/usr/share/tuitor/config.sh'
+[ -f "$__SYSTEM_CONFIG" ] && . "$__SYSTEM_CONFIG"
+
 # ┏━━━━━━━━━━━━━━━┓
 # ┃ PARSE OPTIONS ┃
 # ┗━━━━━━━━━━━━━━━┛
@@ -22,6 +27,7 @@ usage() {
 }
 
 __OPT_FAST=''
+__FILE_ARGUMENT=''
 
 for opt in $options
 do
@@ -43,6 +49,13 @@ do
             continue
             ;;
         *)
+            # There are multiple file arguments -- error
+            [ -n "$__FILE_ARGUMENT" ] && {\
+                echo 'tuitor: only one file argument is allowed' >&2
+                exit 1
+            }
+            __FILE_ARGUMENT="$(eval echo $opt)"
+            shift
             ;;
     esac
 done
@@ -60,43 +73,59 @@ abspath() {
     )"
 }
 
+# Print $* as if the user were typing it on a keyboard (using DELAY* variables)
 print_out() {
-    start_color_code=''
-    for i in $(seq 1 ${#*}); do
-        if [ -z "$__OPT_FAST" ]; then
+    if [ -n "$__OPT_FAST" ]; then
+        echo -n "$@"
+    else                                # Print char by char in real time
+        start_color_code=''
+        for i in $(seq 1 ${#*}); do     # For each character in $*
+            char="$(echo -n "$*" | cut -zc $i)"
+            # Wait a certain delay (as if a user were typing it)
             if echo "$char" | grep -q "[a-zA-Z0-9]" || [ "$char" = "$prev_char" ]
             then
+                sleep $DELAY
+            else
                 # Separator characters take a different time to print
                 sleep $DELAY_SEP
-            else
-                sleep $DELAY
             fi
-        fi
-        char="$(echo -n "$*" | cut -zc $i)"
-        echo -n "$char"
-        echo "$prev_char" "$char" >> /tmp/TMP
-        if [ "$char" = "$(echo "\033")" ]; then
-            start_color_code='true'
-            continue
-        elif [ -n "$start_color_code" ] && [ "$char" = 'm' ]; then
-            start_color_code=''
-            continue
-        fi
-        [ -n "$start_color_code" ] && continue
-        prev_char="$char"
-    done
-    sleep $DELAY
+            echo -n "$char"
+            # If character with code \033 is encountered, everything until m is
+            # considered part of a color code sequence. These characters are
+            # printed instantaneously.
+            if [ "$char" = "$(echo "\033")" ]; then
+                start_color_code='true'
+                continue
+            elif [ -n "$start_color_code" ] && [ "$char" = 'm' ]; then
+                start_color_code=''
+                continue
+            fi
+            [ -n "$start_color_code" ] && continue
+            prev_char="$char"   # Repeating characters will be printed using DELAY even if they are separators
+        done
+        sleep $DELAY
+    fi
 }
 
 cmdline() {
     prompt
-    sleep $DELAY_PROMPT
+    # Wait a small delay after prompt before typing
+    [ -z "$__OPT_FAST" ] && sleep $DELAY_PROMPT
+    # Print the command line as if the user were typing it
     print_out "$*"
     echo
+    # Run the command that was entered into the command line
     "$@"
 }
 alias c=cmdline
 
-. "$(realpath "$1")"
+. "$(realpath "$__FILE_ARGUMENT")"
 
-# vim: fdm=marker
+# Run configuration defined in the tutorial file
+configure
+[ -z "$DELAY_SEP" ] && DELAY_SEP="$DELAY"
+[ -z "$DELAY_PROMPT" ] && DELAY_PROMPT="$DELAY"
+
+tutorial
+
+# vim: ft=sh fdm=marker

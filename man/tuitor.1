@@ -48,13 +48,17 @@ SHELL \- which shell's prompt to use
 Commands
 cmdline (alias: c) \- show prompt and command
 
+.TP
+User-overridable functions
+prompt \- command line prompt
+
 .SH TUTORIAL FILE
 .TP
 Tutorial files are nothing but shell scripts with only a few caveats:
 
 1. Configuration is performed inside a user-defined \fBconfigure\fR function
 
-2. Tutorial commands are run inside a user-defined \fBstart\fR function
+2. Tutorial commands are run inside a user-defined \fBtutorial\fR function
 
 3. Variable names outside of \fBconfigure\fR should not clash with configuration
 variables
