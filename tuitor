@@ -1,0 +1,102 @@
+#!/usr/bin/env sh
+
+__VERSION='0.0.0'
+
+# ┏━━━━━━━━━━━━━━━┓
+# ┃ PARSE OPTIONS ┃
+# ┗━━━━━━━━━━━━━━━┛
+
+options=$(getopt -o 'hf' --long 'help,fast' -n 'tuitor' -- "$@")
+[ $? != 0 ] && exit
+
+usage() {
+    echo 'usage: tuitor [-h] [-f] [COMMAND] FILE'
+    echo '\ncommands:'
+    echo '  tut                 \trun an interactive tutorial (default)'
+    echo '  demo                \tplay out all commands without user interaction'
+    echo '\npositional arguments:'
+    echo '  FILE                \tsource file for the tutorial'
+    echo '\noptions:'
+    echo '  -h, --help          \tshow this help message and exit'
+    echo '  -f, --fast          \tdo not type characters in real time'
+}
+
+__OPT_FAST=''
+
+for opt in $options
+do
+    case "$opt" in
+        '-h'|'--help')
+            usage
+            exit
+            ;;
+        '-v'|'--version')
+            echo "$__VERSION"
+            exit
+            ;;
+        '-f'|'--fast')
+            __OPT_FAST='true'
+            shift
+            continue
+            ;;
+        '--')
+            continue
+            ;;
+        *)
+            ;;
+    esac
+done
+
+# Helper function: convert path to its canonical version
+abspath() {
+    echo "$(
+        [ -f "$1" ] && {
+            cd "$(dirname "$1")" || return
+            echo "$PWD/$(basename "$1")"
+        } || {
+            cd "$1" || return
+            pwd
+        }
+    )"
+}
+
+print_out() {
+    start_color_code=''
+    for i in $(seq 1 ${#*}); do
+        if [ -z "$__OPT_FAST" ]; then
+            if echo "$char" | grep -q "[a-zA-Z0-9]" || [ "$char" = "$prev_char" ]
+            then
+                # Separator characters take a different time to print
+                sleep $DELAY_SEP
+            else
+                sleep $DELAY
+            fi
+        fi
+        char="$(echo -n "$*" | cut -zc $i)"
+        echo -n "$char"
+        echo "$prev_char" "$char" >> /tmp/TMP
+        if [ "$char" = "$(echo "\033")" ]; then
+            start_color_code='true'
+            continue
+        elif [ -n "$start_color_code" ] && [ "$char" = 'm' ]; then
+            start_color_code=''
+            continue
+        fi
+        [ -n "$start_color_code" ] && continue
+        prev_char="$char"
+    done
+    sleep $DELAY
+}
+
+cmdline() {
+    prompt
+    sleep $DELAY_PROMPT
+    print_out "$*"
+    echo
+    "$@"
+}
+alias c=cmdline
+
+. "$(realpath "$1")"
+
+# vim: fdm=marker

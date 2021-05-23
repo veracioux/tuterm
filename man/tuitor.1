@@ -1,0 +1,64 @@
+.TH TUITOR 1
+.SH NAME
+tuitor \- a framework to create tutorials and demonstrations of CLI programs.
+.SH SYNOPSIS
+\fBtuitor\fR [\fB-h\fR]
+
+\fBtuitor\fR [COMMAND] [OPTIONS]
+
+.SH DESCRIPTION
+Tuitor is a script that provides functions to easily create tutorials for CLI
+programs. It allows you to create interactive tutorials (scripts), test program
+functionality and create automated demonstrations - all with the same code.
+It can also be used in conjunction with asciinema to create automated
+recordings.
+
+.TP
+The following commands are available:
+
+tut \- run an interactive tutorial (default)
+
+demo \- play out all commands without user interaction
+
+.SH OPTIONS
+.TP
+.BR \-h ", " \-\-help 
+prints help message. TODO implement
+.TP
+.BR \-v ", " \-\-version 
+prints program version. TODO implement
+.TP
+.BR \-f ", " \-\-fast
+do not type characters in real time. TODO implement
+
+.SH ENVIRONMENT
+Environment or shell variables are used to configure the behavior of tuitor.
+.TP
+Variables
+DELAY \- time it takes to type out a character
+
+DELAY_SEP \- time it takes to type out a separator (-, /, etc.). Falls back to
+DELAY if undefined
+
+DELAY_PROMPT \- time it takes to start typing after the prompt is displayed
+
+SHELL \- which shell's prompt to use
+
+.TP
+Commands
+cmdline (alias: c) \- show prompt and command
+
+.SH TUTORIAL FILE
+.TP
+Tutorial files are nothing but shell scripts with only a few caveats:
+
+1. Configuration is performed inside a user-defined \fBconfigure\fR function
+
+2. Tutorial commands are run inside a user-defined \fBstart\fR function
+
+3. Variable names outside of \fBconfigure\fR should not clash with configuration
+variables
+
+.RE
+In most cases you don't even have to follow these guidelines, but it is
+recommended in order to get consistent behavior.
