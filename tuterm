@@ -4,18 +4,18 @@ __VERSION='0.0.0'
 
 # Configuration
 # TODO account for different PREFIX path
-__SYSTEM_CONFIG='/usr/share/tuitor/config.sh'
+__SYSTEM_CONFIG='/usr/share/tuterm/config.sh'
 [ -f "$__SYSTEM_CONFIG" ] && . "$__SYSTEM_CONFIG"
 
 # ┏━━━━━━━━━━━━━━━┓
 # ┃ PARSE OPTIONS ┃
 # ┗━━━━━━━━━━━━━━━┛
 
-options=$(getopt -o 'hf' --long 'help,fast' -n 'tuitor' -- "$@")
+options=$(getopt -o 'hf' --long 'help,fast' -n 'tuterm' -- "$@")
 [ $? != 0 ] && exit
 
 usage() {
-    echo 'usage: tuitor [-h] [-f] [COMMAND] FILE'
+    echo 'usage: tuterm [-h] [-f] [COMMAND] FILE'
     echo '\ncommands:'
     echo '  tut                 \trun an interactive tutorial (default)'
     echo '  demo                \tplay out all commands without user interaction'
@@ -51,7 +51,7 @@ do
         *)
             # There are multiple file arguments -- error
             [ -n "$__FILE_ARGUMENT" ] && {\
-                echo 'tuitor: only one file argument is allowed' >&2
+                echo 'tuterm: only one file argument is allowed' >&2
                 exit 1
             }
             __FILE_ARGUMENT="$(eval echo $opt)"
