@@ -14,22 +14,29 @@ It can also be used in conjunction with asciinema to create automated
 recordings.
 
 .TP
-The following commands are available:
+The following subcommands are available:
 
 tut \- run an interactive tutorial (default)
 
 demo \- play out all commands without user interaction
 
+client \- enable user interaction with an existing tuterm tutorial instance
+
 .SH OPTIONS
 .TP
 .BR \-h ", " \-\-help 
-prints help message. TODO implement
+Prints help message.
 .TP
 .BR \-v ", " \-\-version 
-prints program version. TODO implement
+Prints program version. TODO implement
 .TP
 .BR \-f ", " \-\-fast
-do not type characters in real time. TODO implement
+Do not type characters in real time.
+.TP
+.BR \-s ", " \-\-separate
+Only display tutorial instructions in this instance of tuterm. User interaction
+is done in a separate instance which must be launched with the 'client'
+subcommand.
 
 .SH ENVIRONMENT
 Environment or shell variables are used to configure the behavior of tuterm.
@@ -42,7 +49,10 @@ DELAY if undefined
 
 DELAY_PROMPT \- time it takes to start typing after the prompt is displayed
 
-SHELL \- which shell's prompt to use
+COLOR_CMDLINE \- color of expected user input
+COLOR_WARNING \- color of warning messages
+
+SHELL \- which shell's prompt to use (TODO)
 
 .TP
 Commands

@@ -13,7 +13,7 @@ shopt -s expand_aliases
 # ┃ PARSE OPTIONS ┃
 # ┗━━━━━━━━━━━━━━━┛
 
-options=$(getopt -o 'hf' --long 'help,fast' -n 'tuterm' -- "$@")
+options=$(getopt -o 'hfs' --long 'help,fast,separate' -n 'tuterm' -- "$@")
 [ $? != 0 ] && exit
 
 usage() {
@@ -21,20 +21,23 @@ usage() {
     echo '\ncommands:'
     echo '  tut                 \trun an interactive tutorial (default)'
     echo '  demo                \tplay out all commands without user interaction'
+    echo '  client              \tconnect to a tutorial that was run with --separate'
     echo '\npositional arguments:'
     echo '  FILE                \tsource file for the tutorial'
     echo '\noptions:'
     echo '  -h, --help          \tshow this help message and exit'
     echo '  -f, --fast          \tdo not type characters in real time'
+    echo '  -s, --separate      \tdisplay instructions and accept user input in separate shells'
 }
 
 __OPT_FAST=''
+__OPT_SEPARATE=''
 __ARG_FILE=''
 __ARG_CMD=''
 
 for opt in $options
 do
-    [ "$1" = "$opt" ] && shift
+    [ "$1" = "$opt" ] && shift          # consume the first commandline argument
     case "$opt" in
         '-h'|'--help')
             usage
@@ -46,6 +49,10 @@ do
             ;;
         '-f'|'--fast')
             __OPT_FAST='true'
+            continue
+            ;;
+        '-s'|'--separate')
+            __OPT_SEPARATE='true'
             continue
             ;;
         '--')
@@ -66,33 +73,57 @@ do
     esac
 done
 
+
+# Helper functions
+# ━━━━━━━━━━━━━━━━
+
+# Test if all options from $@ were provided to tuterm (only long format)
+__option() {                                        # WARNING: bashisms ahead
+    for arg in "$@"; do
+        __OPT_NAME="__OPT_${arg^^}"
+        [ -z "${!__OPT_NAME}" ] && return 1
+    done
+    return 0
+}
+# Test if tuterm was invoked with the command from $1
+__command() {
+    [ "$__ARG_CMD" = "$1" ]
+}
+
+__on_exit() {
+    # Remove the FIFO file
+    __command 'tut' && __option 'separate' &&
+        rm -f "/tmp/tuterm_server_$$" "/tmp/tuterm_client_$$"
+}
+
 # If only one positional argument was provided, treat it as a file and run the
 # default command (tut)
 if [ -z "$__ARG_FILE" ]; then
-    __ARG_FILE="$__ARG_CMD"
-    __ARG_CMD='tut'
+    if [ "$__ARG_CMD" != 'client' ]; then
+        __ARG_FILE="$__ARG_CMD"
+        __ARG_CMD='tut'
+    fi
 fi
 
-# File invalid
-[ -z "$__ARG_FILE" ] && { echo 'tuterm: no file specified' >&2; exit 1; }
-
-# Helper function: convert path to its canonical version
-abspath() {
-    echo "$(
-        [ -f "$1" ] && {
-            cd "$(dirname "$1")" || return
-            echo "$PWD/$(basename "$1")"
-        } || {
-            cd "$1" || return
-            pwd
-        }
-    )"
-}
+if __command 'client'; then                             # subcommand 'client'
+    __ARG_PID="$__ARG_FILE"
+    # If no server pid is specified, try to detect it (TODO multiple servers?)
+    [ -z "$__ARG_PID" ] &&
+        __ARG_PID="$(ls /tmp/tuterm_server_* 2>/dev/null | head -1)"
+    __ARG_PID="${__ARG_PID##/tmp/tuterm_server_}"
+    # exit if the pid is invalid
+    if ! kill -0 "$__ARG_PID" 2>/dev/null || [ ! -p "/tmp/tuterm_server_$__ARG_PID" ]
+    then
+        echo 'tuterm: invalid server PID' >&2; exit 1
+    fi
+else
+    [ -z "$__ARG_FILE" ] && { echo 'tuterm: no file specified' >&2; exit 1; }
+fi
 
 # Print $* as if the user were typing it on a keyboard (using DELAY* variables)
 # --fast option makes the output instantaneous
-print_out() {
-    if [ -n "$__OPT_FAST" ]; then
+__print_out() {
+    if __option 'fast'; then
         echo -n "$@"
     else                                    # Print char by char in real time
         start_color_code=''
@@ -125,37 +156,83 @@ print_out() {
     fi
 }
 
+# ┏━━━━━━━━━━━━━━━━━━━━━┓
+# ┃ INTERFACE FUNCTIONS ┃
+# ┗━━━━━━━━━━━━━━━━━━━━━┛
+
+# Convert path to its canonical version
+abspath() {
+    echo "$(
+        [ -f "$1" ] && {
+            cd "$(dirname "$1")" || return
+            echo "$PWD/$(basename "$1")"
+        } || {
+            cd "$1" || return
+            pwd
+        }
+    )"
+}
+color() {
+    echo -ne "\033[$*m"
+}
+
 cmdline() {
     prompt
-    # Wait a small delay after prompt before typing
-    [ -z "$__OPT_FAST" ] && sleep $DELAY_PROMPT
-    # Print the command line as if the user were typing it
-    echo -ne "\033[1;33m"
-    print_out "$*"
-    echo -ne "\033[0m"
+    __option 'fast' || sleep $DELAY_PROMPT  # Wait a small delay after prompt
+    color "$COLOR_CMDLINE"; __print_out "$*"; color 0 # Type out the command line
     echo
-    if [ "$__ARG_CMD" = 'tut' ]; then
+    if __command 'tut'; then
         __USER_INPUT=''
-        while true; do
+        if __command 'tut' && __option 'separate'; then
+            echo 'Your turn'
+            # Send to the client the expected command
+            echo "$@" > "/tmp/tuterm_server_$$"
+            # Read what the user actually typed in
+            read __USER_INPUT < "/tmp/tuterm_client_$$"
+        else
             prompt
-            # TODO how to discard stdin contents before now
             read __USER_INPUT
-            [ "$__USER_INPUT" == "$*" ] && break
-            echo -e "\033[1;32mWrong command, try again\033[0m" >&2
-        done
+        fi
+        if [ "$__USER_INPUT" != "$*" ]; then
+            {
+                color "$COLOR_WARNING"
+                echo -e "Wrong command, try again"
+                color 0
+            } >&2
+            cmdline "$@"
+            return
+        fi
     fi
     # Run the command that was entered into the command line
     "$@"
 }
 alias c=cmdline
 
-. "$(realpath "$__ARG_FILE")"
+# ┏━━━━━━━━━━━━┓
+# ┃ RUN SCRIPT ┃
+# ┗━━━━━━━━━━━━┛
 
-# Run configuration defined in the tutorial file
-configure
-[ -z "$DELAY_SEP" ] && DELAY_SEP="$DELAY"
-[ -z "$DELAY_PROMPT" ] && DELAY_PROMPT="$DELAY"
+trap __on_exit EXIT
 
-tutorial
+# Create a FIFO to communicate with client shell
+__command 'tut' && __option 'separate' &&
+    mkfifo "/tmp/tuterm_server_$$" "/tmp/tuterm_client_$$"
+
+if __command 'client'; then
+    while read __PROMPT < "/tmp/tuterm_server_$__ARG_PID"; do
+        prompt
+        read __USER_INPUT 
+        echo "$__USER_INPUT" > "/tmp/tuterm_client_$__ARG_PID"
+    done
+else
+    # Load tutorial script
+    . "$(realpath "$__ARG_FILE")"
+    # Run configuration defined in the tutorial file
+    configure
+    [ -z "$DELAY_SEP" ]     && DELAY_SEP="$DELAY"
+    [ -z "$DELAY_PROMPT" ]  && DELAY_PROMPT="$DELAY"
+
+    tutorial
+fi
 
 # vim: ft=sh fdm=marker
