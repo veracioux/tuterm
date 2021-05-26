@@ -20,8 +20,6 @@ tut \- run an interactive tutorial (default)
 
 demo \- play out all commands without user interaction
 
-client \- enable user interaction with an existing tuterm tutorial instance
-
 .SH OPTIONS
 .TP
 .BR \-h ", " \-\-help 
@@ -33,10 +31,16 @@ Prints program version. TODO implement
 .BR \-f ", " \-\-fast
 Do not type characters in real time.
 .TP
-.BR \-s ", " \-\-separate
-Only display tutorial instructions in this instance of tuterm. User interaction
-is done in a separate instance which must be launched with the 'client'
-subcommand.
+.BR \-s ", " \-\-server
+This instance of tuterm will be a server, i.e. it will only show instructions to
+the user. To enable user interaction, run tuterm again with the \fB\-\-client\fR
+option.
+.TP
+.BR \-c ", " \-\-client
+This instance of tuterm will be a client. It will provide user interaction while
+a server (tuterm invoked with \fB\-\-server\fR) will show instructions to the
+user. The PID of the associated server is provided as an argument. If no
+argument is provided, a server will be determined automatically.
 
 .SH ENVIRONMENT
 Environment or shell variables are used to configure the behavior of tuterm.
@@ -50,6 +54,7 @@ DELAY if undefined
 DELAY_PROMPT \- time it takes to start typing after the prompt is displayed
 
 COLOR_CMDLINE \- color of expected user input
+
 COLOR_WARNING \- color of warning messages
 
 SHELL \- which shell's prompt to use (TODO)
@@ -57,6 +62,8 @@ SHELL \- which shell's prompt to use (TODO)
 .TP
 Commands
 cmdline (alias: c) \- show prompt and command
+color \- set output color to the one provided as argument (see
+\fIterminal-colors.d(5)\fR for supported formats)
 
 .TP
 User-overridable functions
@@ -68,7 +75,7 @@ Tutorial files are nothing but shell scripts with only a few caveats:
 
 1. Configuration is performed inside a user-defined \fBconfigure\fR function
 
-2. Tutorial commands are run inside a user-defined \fBtutorial\fR function
+2. Tutorial commands are run inside a user-defined \fBrun\fR function
 
 3. Variable names outside of \fBconfigure\fR should not clash with configuration
 variables

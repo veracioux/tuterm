@@ -13,7 +13,7 @@ shopt -s expand_aliases
 # ┃ PARSE OPTIONS ┃
 # ┗━━━━━━━━━━━━━━━┛
 
-options=$(getopt -o 'hfs' --long 'help,fast,separate' -n 'tuterm' -- "$@")
+options=$(getopt -o 'hfsc' --long 'help,fast,server' -n 'tuterm' -- "$@")
 [ $? != 0 ] && exit
 
 usage() {
@@ -21,17 +21,18 @@ usage() {
     echo '\ncommands:'
     echo '  tut                 \trun an interactive tutorial (default)'
     echo '  demo                \tplay out all commands without user interaction'
-    echo '  client              \tconnect to a tutorial that was run with --separate'
     echo '\npositional arguments:'
     echo '  FILE                \tsource file for the tutorial'
     echo '\noptions:'
     echo '  -h, --help          \tshow this help message and exit'
     echo '  -f, --fast          \tdo not type characters in real time'
-    echo '  -s, --separate      \tdisplay instructions and accept user input in separate shells'
+    echo '  -s, --server        \tonly show instructions in this shell'
+    echo '  -c, --client        \tprovide user interaction for tutorial'
 }
 
 __OPT_FAST=''
-__OPT_SEPARATE=''
+__OPT_SERVER=''
+__OPT_CLIENT=''
 __ARG_FILE=''
 __ARG_CMD=''
 
@@ -51,8 +52,12 @@ do
             __OPT_FAST='true'
             continue
             ;;
-        '-s'|'--separate')
-            __OPT_SEPARATE='true'
+        '-s'|'--server')
+            __OPT_SERVER='true'
+            continue
+            ;;
+        '-c'|'--client')
+            __OPT_CLIENT='true'
             continue
             ;;
         '--')
@@ -92,26 +97,24 @@ __command() {
 
 __on_exit() {
     # Remove the FIFO file
-    __command 'tut' && __option 'separate' &&
+    __command 'tut' && __option 'server' &&
         rm -f "/tmp/tuterm_server_$$" "/tmp/tuterm_client_$$"
 }
 
 # If only one positional argument was provided, treat it as a file and run the
 # default command (tut)
 if [ -z "$__ARG_FILE" ]; then
-    if [ "$__ARG_CMD" != 'client' ]; then
-        __ARG_FILE="$__ARG_CMD"
-        __ARG_CMD='tut'
-    fi
+    __ARG_FILE="$__ARG_CMD"
+    __ARG_PID="$__ARG_CMD"
+    __ARG_CMD='tut'
 fi
 
-if __command 'client'; then                             # subcommand 'client'
-    __ARG_PID="$__ARG_FILE"
+if __command 'tut' && __option 'client'; then                       # --client
     # If no server pid is specified, try to detect it (TODO multiple servers?)
     [ -z "$__ARG_PID" ] &&
         __ARG_PID="$(ls /tmp/tuterm_server_* 2>/dev/null | head -1)"
     __ARG_PID="${__ARG_PID##/tmp/tuterm_server_}"
-    # exit if the pid is invalid
+    # Exit if the pid is invalid
     if ! kill -0 "$__ARG_PID" 2>/dev/null || [ ! -p "/tmp/tuterm_server_$__ARG_PID" ]
     then
         echo 'tuterm: invalid server PID' >&2; exit 1
@@ -183,7 +186,7 @@ cmdline() {
     echo
     if __command 'tut'; then
         __USER_INPUT=''
-        if __command 'tut' && __option 'separate'; then
+        if __command 'tut' && __option 'server'; then
             echo 'Your turn'
             # Send to the client the expected command
             echo "$@" > "/tmp/tuterm_server_$$"
@@ -215,10 +218,10 @@ alias c=cmdline
 trap __on_exit EXIT
 
 # Create a FIFO to communicate with client shell
-__command 'tut' && __option 'separate' &&
+__command 'tut' && __option 'server' &&
     mkfifo "/tmp/tuterm_server_$$" "/tmp/tuterm_client_$$"
 
-if __command 'client'; then
+if __command 'tut' && __option 'client'; then
     while read __PROMPT < "/tmp/tuterm_server_$__ARG_PID"; do
         prompt
         read __USER_INPUT 
@@ -232,7 +235,7 @@ else
     [ -z "$DELAY_SEP" ]     && DELAY_SEP="$DELAY"
     [ -z "$DELAY_PROMPT" ]  && DELAY_PROMPT="$DELAY"
 
-    tutorial
+    run "$__ARG_CMD"
 fi
 
 # vim: ft=sh fdm=marker
