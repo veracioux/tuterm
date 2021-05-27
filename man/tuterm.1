@@ -16,9 +16,9 @@ recordings.
 .TP
 The following subcommands are available:
 
-tut \- run an interactive tutorial (default)
+\fBtut\fR \- run an interactive tutorial (default)
 
-demo \- play out all commands without user interaction
+\fBdemo\fR \- play out all commands without user interaction
 
 .SH OPTIONS
 .TP
@@ -26,7 +26,23 @@ demo \- play out all commands without user interaction
 Prints help message.
 .TP
 .BR \-v ", " \-\-version 
-Prints program version. TODO implement
+Prints program version.
+.TP
+.BR \-p ", " \-\-path 
+The file argument provided to subcommands \fBtut\fR and \fBdemo\fR will be
+searched in the system script directory:
+
+.RS 11
+\fI$PREFIX/share/tuterm/scripts\fR
+.RE
+
+.RS 7
+Programs can install their tutorials in this directory, making it available to
+all users of the system.
+
+\fBNOTE:\fR Directories and hidden files (dotfiles) installed here will be
+ignored. You can use them to store additional information used by the tutorial.
+.RE
 .TP
 .BR \-f ", " \-\-fast
 Do not type characters in real time.
@@ -50,9 +66,9 @@ command, and prints any output that command may have produced. Then it shows the
 next prompt and so on. Between each prompt, an instructional message may be
 shown (see shell functions \fBmessage\fR, \fBMessage\fR).
 
-Tuterm is written in bash, and tutorial files are nothing more than bash. You
-can basically do any shell scripting you want in them, but keep in mind a few
-caveats:
+Tuterm is written in bash, and tutorial files are nothing more than bash
+scripts. You can basically do any shell scripting you want in them, but keep in
+mind a few caveats:
 
 .RS
 1. Configuration is performed inside a user-defined \fBconfigure\fR function
@@ -73,7 +89,7 @@ recommended in order to get consistent behavior.
 .SH ENVIRONMENT
 Environment or shell variables are used to configure the behavior of tuterm.
 .SS
-Variables
+Configuration variables
 \fBDELAY\fR \- time it takes to type out a character
 
 \fBDELAY_SEP\fR \- time it takes to type out a separator (-, /, etc.). Falls
@@ -88,6 +104,11 @@ back to \fBDELAY\fR if undefined
 \fBCOLOR_MESSAGE\fR \- color of a message printed by the \fBmessage\fR command
 
 \fBSHELL\fR \- which shell's prompt to use (TODO)
+
+The following read-only variables are available in tutorial scripts:
+.SS
+Read-only variables
+\fBTUTORIAL_FILE\fR \- path to the tutorial file that is currently running
 
 \fBNOTE\fR: Variable names that start with \fItwo underscores\fR are reserved
 for tuterm's internal use, so don't define them.
@@ -128,6 +149,10 @@ set output color to the one provided as argument (see
 .SS
 User-overridable functions
 \fBprompt\fR \- command line prompt
+\fBconfigure\fR \- initial configuration for the tutorial
+\fBsetup\fR \- any additional setup for the tutorial (usually creating necessary
+file structure)
+\fBrun\fR \- this is where the tutorial is run
 
 .SH CONFIGURATION
 Individual tutorial scripts can perform their own configuration by defining a

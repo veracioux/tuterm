@@ -1,13 +1,14 @@
 #!/usr/bin/env bash
 
+PREFIX='/usr/local'
 __VERSION='0.0.0'
 
-# Load system configuration
-# TODO account for different PREFIX path
-__SYSTEM_CONFIG='/usr/share/tuterm/config.sh'
+# Load system and user configuration
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+__SYSTEM_CONFIG="$PREFIX/share/tuterm/config.sh"
 [ -f "$__SYSTEM_CONFIG" ] && . "$__SYSTEM_CONFIG" && configure
-# Load user configuration
-# TODO XDG_CONFIG_HOME and TUTERM_CONFIG variables
+
 if [ -z "$TUTERM_CONFIG" ]; then
     if [ -n "$XDG_CONFIG_HOME" ]; then
         TUTERM_CONFIG="$XDG_CONFIG_HOME/tuterm/config.sh"
@@ -23,7 +24,7 @@ shopt -s expand_aliases
 # ┃ PARSE OPTIONS ┃
 # ┗━━━━━━━━━━━━━━━┛
 
-options=$(getopt -o 'hfsc' --long 'help,fast,server,client' -n 'tuterm' -- "$@")
+options=$(getopt -o 'hvpfsc' --long 'help,version,path,fast,server,client' -n 'tuterm' -- "$@")
 [ $? != 0 ] && exit
 
 usage() {
@@ -35,11 +36,14 @@ usage() {
     echo '  FILE                \tsource file for the tutorial'
     echo '\noptions:'
     echo '  -h, --help          \tshow this help message and exit'
+    echo '  -v, --version       \tprint tuterm version'
+    echo '  -p, --path          \tfiles will be taken from default path'
     echo '  -f, --fast          \tdo not type characters in real time'
     echo '  -s, --server        \tonly show instructions in this shell'
     echo '  -c, --client        \tprovide user interaction for tutorial'
 }
 
+__OPT_PATH=''
 __OPT_FAST=''
 __OPT_SERVER=''
 __OPT_CLIENT=''
@@ -55,15 +59,18 @@ do
             exit
             ;;
         '-v'|'--version')
-            echo "$__VERSION"
+            echo "tuterm version $__VERSION"
             exit
             ;;
+        '-p'|'--path')
+            readonly __OPT_PATH='true'
+            ;;
         '-f'|'--fast')
-            __OPT_FAST='true'
+            readonly __OPT_FAST='true'
             continue
             ;;
         '-s'|'--server')
-            __OPT_SERVER='true'
+            readonly __OPT_SERVER='true'
             continue
             ;;
         '-c'|'--client')
@@ -96,38 +103,6 @@ done
 __command() {
     [ "$__ARG_CMD" = "$1" ]
 }
-
-# If only one positional argument was provided, treat it as a file and run the
-# default command (tut)
-if [ -z "$__ARG_FILE" ]; then
-    __ARG_FILE="$__ARG_CMD"
-    __ARG_PID="$__ARG_CMD"
-    __ARG_CMD='tut'
-fi
-
-[ -z "$__OPT_CLIENT" ] && [ ! -f "$__ARG_FILE" ] && {
-    echo 'tuterm: tutorial file does not exist' >&2; exit 1;
-}
-
-if __command 'tut' && [ -n "$__OPT_SERVER" ]; then              # tut --server
-    cat "$__ARG_FILE" > "/dev/shm/tuterm_server_$$"
-fi
-if __command 'tut' && [ -n "$__OPT_CLIENT" ]; then              # tut --client
-    # If no server pid is specified, try to detect it (TODO multiple servers?)
-    [ -z "$__ARG_PID" ] &&
-        __ARG_PID="$(ls /tmp/tuterm_server_* 2>/dev/null | head -1)"
-    __ARG_PID="${__ARG_PID##/tmp/tuterm_server_}"
-    # The client does not take a file argument, it will the file
-    # /dev/shm/tuterm_server_* created by the server
-    __ARG_FILE="/dev/shm/tuterm_server_$__ARG_PID"
-    # Exit if the pid is invalid
-    if ! kill -0 "$__ARG_PID" 2>/dev/null || [ ! -p "/tmp/tuterm_server_$__ARG_PID" ]
-    then
-        echo 'tuterm: invalid server PID' >&2; exit 1
-    fi
-else
-    [ -z "$__ARG_FILE" ] && { echo 'tuterm: no file specified' >&2; exit 1; }
-fi
 
 # Print $* as if the user were typing it on a keyboard (using DELAY* variables)
 # --fast option makes the output instantaneous
@@ -165,6 +140,47 @@ __print_out() {
     fi
 }
 
+# Conditioning the arguments
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+# If only one positional argument was provided, treat it as a file and run the
+# default command (tut)
+if [ -z "$__ARG_FILE" ]; then
+    __ARG_FILE="$__ARG_CMD"
+    __ARG_PID="$__ARG_CMD"
+    __ARG_CMD='tut'
+fi
+if [ -n "$__OPT_PATH" ]; then
+    __ARG_FILE="$PREFIX/share/tuterm/scripts/$__ARG_FILE"
+fi
+
+[ -z "$__OPT_CLIENT" ] && [ ! -f "$__ARG_FILE" ] && {
+    echo 'tuterm: tutorial file does not exist' >&2; exit 1;
+}
+
+if __command 'tut' && [ -n "$__OPT_SERVER" ]; then              # tut --server
+    cat "$__ARG_FILE" > "/dev/shm/tuterm_server_$$"
+fi
+if __command 'tut' && [ -n "$__OPT_CLIENT" ]; then              # tut --client
+    # If no server pid is specified, try to detect it (TODO multiple servers?)
+    [ -z "$__ARG_PID" ] &&
+        __ARG_PID="$(ls /tmp/tuterm_server_* 2>/dev/null | head -1)"
+    __ARG_PID="${__ARG_PID##/tmp/tuterm_server_}"
+    # The client does not take a file argument, it will use the file
+    # /dev/shm/tuterm_server_* created by the server
+    __ARG_FILE="/dev/shm/tuterm_server_$__ARG_PID"
+    # Exit if the pid is invalid
+    if ! kill -0 "$__ARG_PID" 2>/dev/null || [ ! -p "/tmp/tuterm_server_$__ARG_PID" ]
+    then
+        echo 'tuterm: invalid server PID' >&2; exit 1
+    fi
+else
+    [ -z "$__ARG_FILE" ] && { echo 'tuterm: no file specified' >&2; exit 1; }
+fi
+
+# Make argument variables read-only
+readonly __ARG_FILE __ARG_PID __ARG_CMD
+
 # ┏━━━━━━━━━━━━━━━━━━━━━┓
 # ┃ INTERFACE FUNCTIONS ┃
 # ┗━━━━━━━━━━━━━━━━━━━━━┛
@@ -183,6 +199,14 @@ abspath() {
 }
 color() {
     echo -ne "\033[$*m"
+}
+# Test if all options from $@ were provided to tuterm (only long format)
+option() {                                          # WARNING: bashisms ahead
+    for arg in "$@"; do
+        local opt_name="__OPT_${arg^^}"
+        [ -z "${!opt_name}" ] && return 1
+    done
+    return 0
 }
 
 cmdline() {
@@ -222,24 +246,16 @@ cmdline() {
 }
 alias c=cmdline
 Message() {
+    if option 'client'; then return 0; fi
     color "$COLOR_MESSAGE"
     echo "$*"
     color 0
 }
-alias M=message
+alias M=Message
 message() {
     ! __command 'demo' && Message "$@"
 }
 alias m=message
-
-# Test if all options from $@ were provided to tuterm (only long format)
-option() {                                        # WARNING: bashisms ahead
-    for arg in "$@"; do
-        __OPT_NAME="__OPT_${arg^^}"
-        [ -z "${!__OPT_NAME}" ] && return 1
-    done
-    return 0
-}
 
 # ┏━━━━━━━━━━━━┓
 # ┃ RUN SCRIPT ┃
@@ -267,6 +283,7 @@ __on_exit() {
 }
 trap __on_exit EXIT
 
+readonly TUTORIAL_FILE="$__ARG_FILE"
 . "$(realpath "$__ARG_FILE")"   # Load tutorial script
 
 # Run configuration defined in the tutorial file
@@ -277,5 +294,8 @@ configure "$__ARG_CMD"
 setup "$__ARG_CMD"              # Perform any additional setup for the tutorial
 clear
 run "$__ARG_CMD"                # Run user-defined tutorial script
+color "$COLOR_WARNING"
+echo 'Tutorial has ended'
+color 0
 
 # vim: filetype=sh foldmethod=marker
