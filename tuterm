@@ -6,6 +6,16 @@ __VERSION='0.0.0'
 # TODO account for different PREFIX path
 __SYSTEM_CONFIG='/usr/share/tuterm/config.sh'
 [ -f "$__SYSTEM_CONFIG" ] && . "$__SYSTEM_CONFIG" && configure
+# Load user configuration
+# TODO XDG_CONFIG_HOME and TUTERM_CONFIG variables
+if [ -z "$TUTERM_CONFIG" ]; then
+    if [ -n "$XDG_CONFIG_HOME" ]; then
+        TUTERM_CONFIG="$XDG_CONFIG_HOME/tuterm/config.sh"
+    else
+        TUTERM_CONFIG="$HOME/.config/tuterm/config.sh"
+    fi
+fi
+[ -f "$TUTERM_CONFIG" ] && . "$TUTERM_CONFIG" && configure
 
 shopt -s expand_aliases
 
@@ -208,13 +218,17 @@ cmdline() {
         fi
     fi
     # Run the command that was entered into the command line
-    "$@"
+    if ! option 'server'; then "$@"; fi
 }
 alias c=cmdline
-message() {
+Message() {
     color "$COLOR_MESSAGE"
     echo "$*"
     color 0
+}
+alias M=message
+message() {
+    ! __command 'demo' && Message "$@"
 }
 alias m=message
 

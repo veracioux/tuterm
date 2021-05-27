@@ -1,4 +1,4 @@
-.TH TUTERM 1
+.TH TUTERM 1 "" "" "User Commands"
 .SH NAME
 tuterm \- a framework to create tutorials and demonstrations of CLI programs.
 .SH SYNOPSIS
@@ -42,39 +42,19 @@ a server (tuterm invoked with \fB\-\-server\fR) will show instructions to the
 user. The PID of the associated server is provided as an argument. If no
 argument is provided, a server will be determined automatically.
 
-.SH ENVIRONMENT
-Environment or shell variables are used to configure the behavior of tuterm.
-.TP
-Variables
-DELAY \- time it takes to type out a character
-
-DELAY_SEP \- time it takes to type out a separator (-, /, etc.). Falls back to
-DELAY if undefined
-
-DELAY_PROMPT \- time it takes to start typing after the prompt is displayed
-
-COLOR_CMDLINE \- color of expected user input
-
-COLOR_WARNING \- color of warning messages
-
-COLOR_MESSAGE \- color of a message printed by the \fBmessage\fR command
-
-SHELL \- which shell's prompt to use (TODO)
-
-.TP
-Commands
-cmdline (alias: c) \- show prompt and command
-color \- set output color to the one provided as argument (see
-\fIterminal-colors.d(5)\fR for supported formats)
-
-.TP
-User-overridable functions
-prompt \- command line prompt
-
 .SH TUTORIAL FILE
-.TP
-Tutorial files are nothing but shell scripts with only a few caveats:
+The flow of a tutorial file is straightforward. Tuterm shows a prompt and
+expected user input (see shell function \fBcmdline\fR). Then it repeats the
+prompt and waits for the user to repeat that input. After that it runs the
+command, and prints any output that command may have produced. Then it shows the
+next prompt and so on. Between each prompt, an instructional message may be
+shown (see shell functions \fBmessage\fR, \fBMessage\fR).
 
+Tuterm is written in bash, and tutorial files are nothing more than bash. You
+can basically do any shell scripting you want in them, but keep in mind a few
+caveats:
+
+.RS
 1. Configuration is performed inside a user-defined \fBconfigure\fR function
 
 2. Other setup is performed inside a user-defined \fBsetup\fR function. This
@@ -89,3 +69,93 @@ variables
 .RE
 In most cases you don't even have to follow these guidelines, but it is
 recommended in order to get consistent behavior.
+
+.SH ENVIRONMENT
+Environment or shell variables are used to configure the behavior of tuterm.
+.SS
+Variables
+\fBDELAY\fR \- time it takes to type out a character
+
+\fBDELAY_SEP\fR \- time it takes to type out a separator (-, /, etc.). Falls
+back to \fBDELAY\fR if undefined
+
+\fBDELAY_PROMPT\fR \- time it takes to start typing after the prompt is displayed
+
+\fBCOLOR_CMDLINE\fR \- color of expected user input
+
+\fBCOLOR_WARNING\fR \- color of warning messages
+
+\fBCOLOR_MESSAGE\fR \- color of a message printed by the \fBmessage\fR command
+
+\fBSHELL\fR \- which shell's prompt to use (TODO)
+
+\fBNOTE\fR: Variable names that start with \fItwo underscores\fR are reserved
+for tuterm's internal use, so don't define them.
+
+.SS
+Shell functions
+
+When defining tutorial scripts, there are a few predefined shell functions you
+can use.
+
+.TP
+\fBcmdline\fR (alias: \fBc\fR)
+
+.RS 4
+show \fBprompt\fR and:
+
+.RS 4
+1. in tutorial mode: print expected user input (provided as arguments) and wait
+for the user's input. Repeat the prompt until the user's input is correct, then
+run the command that was input. Wrong input triggers a warning message colored
+by the variable \fBCOLOR_MESSAGE\fR.
+
+2. in demo mode: print the expected user input without any user interaction
+.RE
+.RE
+
+\fBmessage\fR (alias: \fBm\fR) \- print a message to the user if tutorial mode is on
+
+\fBMessage\fR (alias: \fBM\fR) \- print a message to the user in any mode
+
+\fBcolor\fR
+.RS 4
+set output color to the one provided as argument (see
+.br
+\fIterminal-colors.d(5)\fR for supported formats)
+.RE
+
+.SS
+User-overridable functions
+\fBprompt\fR \- command line prompt
+
+.SH CONFIGURATION
+Individual tutorial scripts can perform their own configuration by defining a
+\fBconfigure\fR function. Unspecified options will be taken from the
+configuration files.
+
+Configuration files are loaded in the following order:
+
+.RS 4
+- System configuration at $PREFIX/share/tuterm/config.sh
+
+- User configuration at:
+
+    1. $TUTERM_CONFIG if it exists, otherwise
+    2. $XDG_CONFIG_HOME/tuterm/config.sh if it exists, otherwise
+    3. $USER/.config/tuterm/config.sh if it exists
+.RE
+
+The configuration options are documented inside the system configuration file,
+in addition to the \fIENVIRONMENT\fR section of this manual.
+
+.SH EXAMPLES
+TODO
+.SS Projects using tuterm
+-
+.UR https://github.com/tem-cli/tem
+tem
+.UE
+
+.SH SEE ALSO
+bash(1), asciinema(1)
