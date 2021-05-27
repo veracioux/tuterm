@@ -57,6 +57,8 @@ COLOR_CMDLINE \- color of expected user input
 
 COLOR_WARNING \- color of warning messages
 
+COLOR_MESSAGE \- color of a message printed by the \fBmessage\fR command
+
 SHELL \- which shell's prompt to use (TODO)
 
 .TP
@@ -74,6 +76,10 @@ prompt \- command line prompt
 Tutorial files are nothing but shell scripts with only a few caveats:
 
 1. Configuration is performed inside a user-defined \fBconfigure\fR function
+
+2. Other setup is performed inside a user-defined \fBsetup\fR function. This
+will usually contain commands that create a directory structure for the
+tutorial.
 
 2. Tutorial commands are run inside a user-defined \fBrun\fR function
 
