@@ -24,23 +24,24 @@ shopt -s expand_aliases
 # ┃ PARSE OPTIONS ┃
 # ┗━━━━━━━━━━━━━━━┛
 
-options=$(getopt -o 'hvpfsc' --long 'help,version,path,fast,server,client' -n 'tuterm' -- "$@")
+options=$(getopt -o 'hvpfscl' --long 'help,version,path,fast,server,client,list' -n 'tuterm' -- "$@")
 [ $? != 0 ] && exit
 
 usage() {
-    echo 'usage: tuterm [-h] [-f] [COMMAND] FILE'
-    echo '\ncommands:'
-    echo '  tut                 \trun an interactive tutorial (default)'
-    echo '  demo                \tplay out all commands without user interaction'
-    echo '\npositional arguments:'
-    echo '  FILE                \tsource file for the tutorial'
-    echo '\noptions:'
-    echo '  -h, --help          \tshow this help message and exit'
-    echo '  -v, --version       \tprint tuterm version'
-    echo '  -p, --path          \tfiles will be taken from default path'
-    echo '  -f, --fast          \tdo not type characters in real time'
-    echo '  -s, --server        \tonly show instructions in this shell'
-    echo '  -c, --client        \tprovide user interaction for tutorial'
+    echo -e 'usage: tuterm [-h] [-f] [COMMAND] FILE'
+    echo -e '\ncommands:'
+    echo -e '  tut                 \trun an interactive tutorial (default)'
+    echo -e '  demo                \tplay out all commands without user interaction'
+    echo -e '\npositional arguments:'
+    echo -e '  FILE                \tsource file for the tutorial'
+    echo -e '\noptions:'
+    echo -e '  -h, --help          \tshow this help message and exit'
+    echo -e '  -v, --version       \tprint tuterm version'
+    echo -e '  -p, --path          \tfiles will be taken from default path'
+    echo -e '  -f, --fast          \tdo not type characters in real time'
+    echo -e '  -s, --server        \tonly show instructions in this shell'
+    echo -e '  -c, --client        \tprovide user interaction for tutorial'
+    echo -e '  -l, --list          \tlist installed tutorial scripts'
 }
 
 __OPT_PATH=''
@@ -56,30 +57,26 @@ do
     case "$opt" in
         '-h'|'--help')
             usage
-            exit
-            ;;
+            exit ;;
         '-v'|'--version')
             echo "tuterm version $__VERSION"
-            exit
-            ;;
+            exit ;;
         '-p'|'--path')
-            readonly __OPT_PATH='true'
-            ;;
+            readonly __OPT_PATH='true' ;;
         '-f'|'--fast')
             readonly __OPT_FAST='true'
-            continue
-            ;;
+            continue ;;
         '-s'|'--server')
             readonly __OPT_SERVER='true'
-            continue
-            ;;
+            continue ;;
         '-c'|'--client')
             __OPT_CLIENT='true'
-            continue
-            ;;
+            continue ;;
+        '-l'|'--list')
+            command ls -1 /usr/share/tuterm/scripts
+            exit ;;
         '--')
-            continue
-            ;;
+            continue ;;
         *)
             if [ -z "$__ARG_CMD" ]; then
                 __ARG_CMD="$(eval echo $opt)"
