@@ -18,42 +18,40 @@ if [ -z "$TUTERM_CONFIG" ]; then
 fi
 [ -f "$TUTERM_CONFIG" ] && . "$TUTERM_CONFIG" && configure
 
+# Shell configuration
 shopt -s expand_aliases
 
 # ┏━━━━━━━━━━━━━━━┓
 # ┃ PARSE OPTIONS ┃
 # ┗━━━━━━━━━━━━━━━┛
 
-options=$(getopt -o 'hvpfscl' --long 'help,version,path,fast,server,client,list' -n 'tuterm' -- "$@")
+options=$(getopt -o 'hvpfsclm:' --long 'help,version,path,fast,server,client,list,mode:' -n 'tuterm' -- "$@")
 [ $? != 0 ] && exit
 
 usage() {
     echo -e 'usage: tuterm [-h] [-f] [COMMAND] FILE'
-    echo -e '\ncommands:'
-    echo -e '  tut                 \trun an interactive tutorial (default)'
-    echo -e '  demo                \tplay out all commands without user interaction'
     echo -e '\npositional arguments:'
-    echo -e '  FILE                \tsource file for the tutorial'
+    echo -e '  FILE                 \tsource file for the tutorial'
     echo -e '\noptions:'
-    echo -e '  -h, --help          \tshow this help message and exit'
-    echo -e '  -v, --version       \tprint tuterm version'
-    echo -e '  -p, --path          \tfiles will be taken from default path'
-    echo -e '  -f, --fast          \tdo not type characters in real time'
-    echo -e '  -s, --server        \tonly show instructions in this shell'
-    echo -e '  -c, --client        \tprovide user interaction for tutorial'
-    echo -e '  -l, --list          \tlist installed tutorial scripts'
+    echo -e '  -h, --help           \tshow this help message and exit'
+    echo -e '  -v, --version        \tprint tuterm version'
+    echo -e '  -m, --mode MODE      \tselect MODE: tutorial (default) or demo'
+    echo -e '  -f, --fast           \tdo not type characters in real time'
+    echo -e '  -s, --server         \tonly show instructions in this shell'
+    echo -e '  -c, --client         \tprovide user interaction for tutorial'
+    echo -e '  -l, --list           \tlist installed tuterm scripts'
+    # echo -e '  -L, --list-running   \tlist running tuterm servers'
 }
 
-__OPT_PATH=''
 __OPT_FAST=''
 __OPT_SERVER=''
 __OPT_CLIENT=''
+__OPT_MODE='tutorial'
 __ARG_FILE=''
-__ARG_CMD=''
 
 for opt in $options
 do
-    [ "$1" = "$opt" ] && shift          # consume the first commandline argument
+    [ "$1" = "$(eval echo $opt)" ] && shift || continue
     case "$opt" in
         '-h'|'--help')
             usage
@@ -61,8 +59,6 @@ do
         '-v'|'--version')
             echo "tuterm version $__VERSION"
             exit ;;
-        '-p'|'--path')
-            readonly __OPT_PATH='true' ;;
         '-f'|'--fast')
             readonly __OPT_FAST='true'
             continue ;;
@@ -70,49 +66,43 @@ do
             readonly __OPT_SERVER='true'
             continue ;;
         '-c'|'--client')
-            __OPT_CLIENT='true'
+            readonly __OPT_CLIENT='true'
+            continue ;;
+        '-m'|'--mode')
+            readonly __OPT_MODE="$1"
+            shift
             continue ;;
         '-l'|'--list')
             command ls -1 /usr/share/tuterm/scripts
             exit ;;
-        '--')
-            continue ;;
         *)
-            if [ -z "$__ARG_CMD" ]; then
-                __ARG_CMD="$(eval echo $opt)"
-                continue
-            fi
             # There are multiple file arguments -- error
-            [ -n "$__ARG_FILE" ] && {\
+            if [ -n "$__ARG_FILE" ]; then
                 echo 'tuterm: only one file argument is allowed' >&2
                 exit 1
-            }
+            fi
             __ARG_FILE="$(eval echo $opt)"
             ;;
     esac
 done
 
 
-# Helper functions
-# ━━━━━━━━━━━━━━━━
-
-# Test if tuterm was invoked with the command from $1
-__command() {
-    [ "$__ARG_CMD" = "$1" ]
-}
+# ┏━━━━━━━━━━━━━━━━━━┓
+# ┃ Helper functions ┃
+# ┗━━━━━━━━━━━━━━━━━━┛
 
 # Print $* as if the user were typing it on a keyboard (using DELAY* variables)
 # --fast option makes the output instantaneous
 __print_out() {
-    if option 'fast'; then
+    if option 'fast'; then                  # Print it out instantaneously
         echo -n "$@"
     else                                    # Print char by char in real time
-        start_color_code=''
+        local start_color_code=''
         for i in $(seq 1 "$(echo "$*" | wc -m)")    # For each character in $*
         do
-            char="$(echo -n "$*" | cut -c $i | tr -d '\n')"
+            local char="$(echo -n "$*" | cut -c $i | tr -d '\n')"
             # Wait a certain delay (as if a user were typing it)
-            if echo "$char" | grep -q "[a-zA-Z0-9]" || [ "$char" = "$prev_char" ]
+            if echo "$char" | grep -q "[a-zA-Z0-9]" || [ "$char" = "$__prev_char" ]
             then
                 sleep $DELAY
             else
@@ -131,34 +121,132 @@ __print_out() {
                 continue
             fi
             [ -n "$start_color_code" ] && continue
-            prev_char="$char"   # Repeating characters will be printed using DELAY even if they are separators
+            # Repeating characters will be printed using DELAY even if they are separators
+            __prev_char="$char"
         done
         sleep $DELAY
     fi
 }
 
-# Conditioning the arguments
-# ━━━━━━━━━━━━━━━━━━━━━━━━━━
+# ┏━━━━━━━━━━━━━━━┓
+# ┃ API FUNCTIONS ┃
+# ┗━━━━━━━━━━━━━━━┛
 
-# If only one positional argument was provided, treat it as a file and run the
-# default command (tut)
-if [ -z "$__ARG_FILE" ]; then
-    __ARG_FILE="$__ARG_CMD"
-    __ARG_PID="$__ARG_CMD"
-    __ARG_CMD='tut'
-fi
-if [ -n "$__OPT_PATH" ]; then
-    __ARG_FILE="$PREFIX/share/tuterm/scripts/$__ARG_FILE"
-fi
-
-[ -z "$__OPT_CLIENT" ] && [ ! -f "$__ARG_FILE" ] && {
-    echo 'tuterm: tutorial file does not exist' >&2; exit 1;
+# Convert path to its canonical version (TODO hide this function from the API?)
+abspath() {
+    echo "$(
+        [ -f "$1" ] && {                                    # File exists
+            pushd "$(dirname "$1")" >/dev/null || return    # cd and print path
+            echo "$PWD/$(basename "$1")"
+            popd >/dev/null
+        } || {
+            pushd "$1" >/dev/null 2>/dev/null || return
+            pwd
+            popd >/dev/null
+        }
+    )"
 }
 
-if __command 'tut' && [ -n "$__OPT_SERVER" ]; then              # tut --server
+# Set color for printing. See manpage for details.
+color() {
+    # Try to query a variable named "COLOR_$1", automatically capitalized
+    local color_var="COLOR_${1^^}"
+    if [ -v "$color_var" ]; then            # Variable exists
+        echo -ne "\033[${!color_var}m"
+    else                                    # doesn't
+        echo -ne "\033[$1m";
+    fi
+}
+
+# Test if all options from $@ were provided to tuterm (only long format)
+option() {                                          # WARNING: bashisms ahead
+    for arg in "$@"; do
+        local opt_name="__OPT_${arg^^}"
+        [ -z "${!opt_name}" ] && return 1
+    done
+    return 0
+}
+alias opt=option
+
+# Test if $1 is the active mode
+mode() { [[ "$__OPT_MODE" = "$1"* ]]; }
+
+cmdline() {
+    prompt
+    if ! option 'client'; then
+        stty -echo
+        option 'fast' || sleep $DELAY_PROMPT  # Wait a small delay after prompt
+        ! mode 'demo' && color cmdline
+        __print_out "$*"; color 0 # Type out the command line
+        echo
+        stty echo
+    fi
+    if mode 'tutorial'; then
+        __USER_INPUT=''
+        if option 'server'; then                        # --server
+            read __discard < "/tmp/tuterm_client_$$"    # Wait for continue signal
+        else                                            # not --server
+            if ! option 'client'; then prompt; fi
+            read __USER_INPUT                           # Read user input
+            if [ "$__USER_INPUT" != "$*" ]; then        # Oops, wrong input
+                {
+                    color warning
+                    echo -e "Wrong command, try again"
+                    color 0
+                } >&2
+                __OPT_FAST='true' cmdline "$@"
+                return
+            fi
+            # Send continue signal to server
+            if option 'client'; then
+                echo CONTINUE > "/tmp/tuterm_client_$__ARG_PID"
+            fi
+        fi
+    fi
+    # Run the command that was entered into the command line
+    if ! option 'server'; then "$@"; fi
+}
+alias c=cmdline
+
+# Message that works in both tutorial and demo mode
+Message() {
+    if option 'client'; then return 0; fi
+    color message
+    echo "$*"
+    color 0
+}
+alias M=Message
+
+# Message that works only in tutorial mode
+message() {
+    ! mode 'demo' && Message "$@"
+}
+alias m=message
+
+# ┏━━━━━━━━━━━━━━━━━━━━━┓
+# ┃ ARGUMENT PROCESSING ┃
+# ┗━━━━━━━━━━━━━━━━━━━━━┛
+
+# File that doesn't contain / will be taken from the default path
+if [[ "$__ARG_FILE" != */* ]]; then
+    # TODO add user-specific scripts directory
+    __file="/usr/share/tuterm/scripts/$__ARG_FILE"
+    # If default path contains the file take it, otherwise take the local file
+    [ -f "$__file" ]  && __ARG_FILE="$__file"
+fi
+__ARG_FILE="$(abspath "$__ARG_FILE")"
+
+if ! option 'client' && [ ! -f "$__ARG_FILE" ]; then
+    echo 'tuterm: tutorial file does not exist' >&2
+    exit 1
+fi
+
+# Create a backup of the tutorial script in shm
+if mode 'tutorial' && option 'server'; then             # --tutorial --server
     cat "$__ARG_FILE" > "/dev/shm/tuterm_server_$$"
 fi
-if __command 'tut' && [ -n "$__OPT_CLIENT" ]; then              # tut --client
+
+if mode 'tutorial' && option 'client'; then             # --tutorial --client
     # If no server pid is specified, try to detect it (TODO multiple servers?)
     [ -z "$__ARG_PID" ] &&
         __ARG_PID="$(ls /tmp/tuterm_server_* 2>/dev/null | head -1)"
@@ -176,104 +264,29 @@ else
 fi
 
 # Make argument variables read-only
-readonly __ARG_FILE __ARG_PID __ARG_CMD
-
-# ┏━━━━━━━━━━━━━━━━━━━━━┓
-# ┃ INTERFACE FUNCTIONS ┃
-# ┗━━━━━━━━━━━━━━━━━━━━━┛
-
-# Convert path to its canonical version
-abspath() {
-    echo "$(
-        [ -f "$1" ] && {
-            cd "$(dirname "$1")" || return
-            echo "$PWD/$(basename "$1")"
-        } || {
-            cd "$1" || return
-            pwd
-        }
-    )"
-}
-color() {
-    echo -ne "\033[$*m"
-}
-# Test if all options from $@ were provided to tuterm (only long format)
-option() {                                          # WARNING: bashisms ahead
-    for arg in "$@"; do
-        local opt_name="__OPT_${arg^^}"
-        [ -z "${!opt_name}" ] && return 1
-    done
-    return 0
-}
-
-cmdline() {
-    prompt
-    if ! option 'client'; then
-        stty -echo
-        option 'fast' || sleep $DELAY_PROMPT  # Wait a small delay after prompt
-        ! __command 'demo' && color "$COLOR_CMDLINE"
-        __print_out "$*"; color 0 # Type out the command line
-        echo
-        stty echo
-    fi
-    if __command 'tut'; then
-        __USER_INPUT=''
-        if option 'server'; then                        # --server
-            read __discard < "/tmp/tuterm_client_$$"    # Wait for continue signal
-        else                                            # not --server
-            if ! option 'client'; then prompt; fi
-            read __USER_INPUT                           # Read user input
-            if [ "$__USER_INPUT" != "$*" ]; then        # Oops, wrong input
-                {
-                    color "$COLOR_WARNING"
-                    echo -e "Wrong command, try again"
-                    color 0
-                } >&2
-                __OPT_FAST='true' cmdline "$@"
-                return
-            fi
-            # Send continue signal to server
-            if option 'client'; then
-                echo CONTINUE > "/tmp/tuterm_client_$__ARG_PID"
-            fi
-        fi
-    fi
-    # Run the command that was entered into the command line
-    if ! option 'server'; then "$@"; fi
-}
-alias c=cmdline
-Message() {
-    if option 'client'; then return 0; fi
-    color "$COLOR_MESSAGE"
-    echo "$*"
-    color 0
-}
-alias M=Message
-message() {
-    ! __command 'demo' && Message "$@"
-}
-alias m=message
+readonly __ARG_FILE __ARG_PID
 
 # ┏━━━━━━━━━━━━┓
 # ┃ RUN SCRIPT ┃
 # ┗━━━━━━━━━━━━┛
 
-if __command 'demo' || option 'server'; then
+if mode 'demo' || option 'server'; then
     # Disable user input in the terminal
     # TODO actually, this just makes it invisible. stty -cread doesn't work,
-    # look into that
+    # must look into that
     stty -echo
 fi
 
-# tut --server
-__command 'tut' && option 'server' && {
+# --tutorial --server
+mode 'tutorial' && option 'server' && {
     # Create a FIFO to communicate with client shell
     mkfifo "/tmp/tuterm_server_$$" "/tmp/tuterm_client_$$"
 }
 
+# Exit cleanup
 __on_exit() {
     # Remove inter-process files
-    __command 'tut' && option 'server' && {
+    mode 'tutorial' && option 'server' && {
         rm -f "/dev/shm/tuterm_server_$$"
         rm -f "/tmp/tuterm_server_$$" "/tmp/tuterm_client_$$"
     }
@@ -288,11 +301,8 @@ configure "$__ARG_CMD"
 [ -z "$DELAY_SEP" ]     && DELAY_SEP="$DELAY"
 [ -z "$DELAY_PROMPT" ]  && DELAY_PROMPT="$DELAY"
 
-setup "$__ARG_CMD"              # Perform any additional setup for the tutorial
+setup                           # Perform any additional setup for the tutorial
 clear
-run "$__ARG_CMD"                # Run user-defined tutorial script
-color "$COLOR_WARNING"
-echo 'Tutorial has ended'
-color 0
+run
 
-# vim: filetype=sh foldmethod=marker
+# vim: filetype=sh foldmethod=syntax
