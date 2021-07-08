@@ -3,90 +3,6 @@
 PREFIX='/usr/local'
 __VERSION='0.0.0'
 
-# Load system and user configuration
-# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-__SYSTEM_CONFIG="$PREFIX/share/tuterm/config.sh"
-[ -f "$__SYSTEM_CONFIG" ] && . "$__SYSTEM_CONFIG" && configure
-
-if [ -z "$TUTERM_CONFIG" ]; then
-    if [ -n "$XDG_CONFIG_HOME" ]; then
-        TUTERM_CONFIG="$XDG_CONFIG_HOME/tuterm/config.sh"
-    else
-        TUTERM_CONFIG="$HOME/.config/tuterm/config.sh"
-    fi
-fi
-[ -f "$TUTERM_CONFIG" ] && . "$TUTERM_CONFIG" && configure
-
-# Shell configuration
-shopt -s expand_aliases
-
-# ┏━━━━━━━━━━━━━━━┓
-# ┃ PARSE OPTIONS ┃
-# ┗━━━━━━━━━━━━━━━┛
-
-options=$(getopt -o 'hvpfsclm:' --long 'help,version,path,fast,server,client,list,mode:' -n 'tuterm' -- "$@")
-[ $? != 0 ] && exit
-
-usage() {
-    echo -e 'usage: tuterm [-h] [-f] [COMMAND] FILE'
-    echo -e '\npositional arguments:'
-    echo -e '  FILE                 \tsource file for the tutorial'
-    echo -e '\noptions:'
-    echo -e '  -h, --help           \tshow this help message and exit'
-    echo -e '  -v, --version        \tprint tuterm version'
-    echo -e '  -m, --mode MODE      \tselect MODE: tutorial (default) or demo'
-    echo -e '  -f, --fast           \tdo not type characters in real time'
-    echo -e '  -s, --server         \tonly show instructions in this shell'
-    echo -e '  -c, --client         \tprovide user interaction for tutorial'
-    echo -e '  -l, --list           \tlist installed tuterm scripts'
-    # echo -e '  -L, --list-running   \tlist running tuterm servers'
-}
-
-__OPT_FAST=''
-__OPT_SERVER=''
-__OPT_CLIENT=''
-__OPT_MODE='tutorial'
-__ARG_FILE=''
-
-for opt in $options
-do
-    [ "$1" = "$(eval echo $opt)" ] && shift || continue
-    case "$opt" in
-        '-h'|'--help')
-            usage
-            exit ;;
-        '-v'|'--version')
-            echo "tuterm version $__VERSION"
-            exit ;;
-        '-f'|'--fast')
-            readonly __OPT_FAST='true'
-            continue ;;
-        '-s'|'--server')
-            readonly __OPT_SERVER='true'
-            continue ;;
-        '-c'|'--client')
-            readonly __OPT_CLIENT='true'
-            continue ;;
-        '-m'|'--mode')
-            readonly __OPT_MODE="$1"
-            shift
-            continue ;;
-        '-l'|'--list')
-            command ls -1 /usr/share/tuterm/scripts
-            exit ;;
-        *)
-            # There are multiple file arguments -- error
-            if [ -n "$__ARG_FILE" ]; then
-                echo 'tuterm: only one file argument is allowed' >&2
-                exit 1
-            fi
-            __ARG_FILE="$(eval echo $opt)"
-            ;;
-    esac
-done
-
-
 # ┏━━━━━━━━━━━━━━━━━━┓
 # ┃ Helper functions ┃
 # ┗━━━━━━━━━━━━━━━━━━┛
@@ -147,30 +63,6 @@ abspath() {
     )"
 }
 
-# Set color for printing. See manpage for details.
-color() {
-    # Try to query a variable named "COLOR_$1", automatically capitalized
-    local color_var="COLOR_${1^^}"
-    if [ -v "$color_var" ]; then            # Variable exists
-        echo -ne "\033[${!color_var}m"
-    else                                    # doesn't
-        echo -ne "\033[$1m";
-    fi
-}
-
-# Test if all options from $@ were provided to tuterm (only long format)
-option() {                                          # WARNING: bashisms ahead
-    for arg in "$@"; do
-        local opt_name="__OPT_${arg^^}"
-        [ -z "${!opt_name}" ] && return 1
-    done
-    return 0
-}
-alias opt=option
-
-# Test if $1 is the active mode
-mode() { [[ "$__OPT_MODE" = "$1"* ]]; }
-
 cmdline() {
     prompt
     if ! option 'client'; then
@@ -206,7 +98,13 @@ cmdline() {
     # Run the command that was entered into the command line
     if ! option 'server'; then "$@"; fi
 }
-alias c=cmdline
+readonly -f cmdline; alias c=cmdline
+
+# Message that works only in tutorial mode
+message() {
+    ! mode 'demo' && Message "$@"
+}
+readonly -f message; alias m=message
 
 # Message that works in both tutorial and demo mode
 Message() {
@@ -215,13 +113,133 @@ Message() {
     echo "$*"
     color 0
 }
-alias M=Message
+readonly -f Message; alias M=Message
 
-# Message that works only in tutorial mode
-message() {
-    ! mode 'demo' && Message "$@"
+# Test if all options from $@ were provided to tuterm (only long format)
+option() {                                          # WARNING: bashisms ahead
+    for arg in "$@"; do
+        local opt_name="__OPT_${arg^^}"
+        [ -z "${!opt_name}" ] && return 1
+    done
+    return 0
 }
-alias m=message
+readonly -f option; alias opt=option
+
+# Test if $1 is the active mode
+mode() {
+    [[ "$__OPT_MODE" = "$1"* ]]
+}
+readonly -f mode
+
+fake_home() {
+    if ! option 'client'; then
+        local random="$(shuf -erz -n20 {A..Z} {a..z} {0..9})"
+        local dest="/tmp/tuterm/$random"
+        if mkdir -p "$dest"; then
+            echo 'Error: could not create fake home!' >&2
+            exit 1
+        fi
+        cd "$dest"
+    fi
+}
+readonly -f fake_home
+
+# Set color for printing. See manpage for details.
+color() {
+    # Try to query a variable named "COLOR_$1", automatically capitalized
+    local color_var="COLOR_${1^^}"
+    if [ -v "$color_var" ]; then            # Variable exists
+        echo -ne "\033[${!color_var}m"
+    else                                    # doesn't
+        echo -ne "\033[$1m";
+    fi
+}
+readonly -f color
+
+# ┏━━━━━━━━━━━━━┓
+# ┃ LOAD CONFIG ┃
+# ┗━━━━━━━━━━━━━┛
+
+__SYSTEM_CONFIG="$PREFIX/share/tuterm/config.sh"
+[ -f "$__SYSTEM_CONFIG" ] && . "$__SYSTEM_CONFIG"
+
+if [ -z "$TUTERM_CONFIG" ]; then
+    if [ -n "$XDG_CONFIG_HOME" ]; then
+        TUTERM_CONFIG="$XDG_CONFIG_HOME/tuterm/config.sh"
+    else
+        TUTERM_CONFIG="$HOME/.config/tuterm/config.sh"
+    fi
+fi
+[ -f "$TUTERM_CONFIG" ] && . "$TUTERM_CONFIG"
+
+# Shell configuration
+shopt -s expand_aliases
+
+# ┏━━━━━━━━━━━━━━━┓
+# ┃ PARSE OPTIONS ┃
+# ┗━━━━━━━━━━━━━━━┛
+
+options=$(getopt -o 'hvpfsclm:' --long 'help,version,path,fast,server,client,list,mode:' -n 'tuterm' -- "$@")
+[ $? != 0 ] && exit
+
+usage() {
+    echo -e 'usage: tuterm [-h] [-f] [COMMAND] FILE'
+    echo -e '\npositional arguments:'
+    echo -e '  FILE                 \tsource file for the tutorial'
+    echo -e '\noptions:'
+    echo -e '  -h, --help           \tshow this help message and exit'
+    echo -e '  -v, --version        \tprint tuterm version'
+    echo -e '  -m, --mode MODE      \tselect MODE: tutorial (default) or demo'
+    echo -e '  -f, --fast           \tdo not type characters in real time'
+    echo -e '  -s, --server         \tonly show instructions in this shell'
+    echo -e '  -c, --client         \tprovide user interaction for tutorial'
+    echo -e '  -l, --list           \tlist installed tuterm scripts'
+    # echo -e '  -L, --list-running   \tlist running tuterm servers'
+}
+
+__OPT_FAST=''
+__OPT_SERVER=''
+__OPT_CLIENT=''
+__OPT_MODE='tutorial'
+__ARG_FILE=''
+
+for opt in $options
+do
+    [ "$1" = "$(eval echo $opt)" ] && shift || continue
+    case "$opt" in
+        '-h'|'--help')
+            usage
+            exit ;;
+        '-v'|'--version')
+            echo "tuterm version $__VERSION"
+            exit ;;
+        '-f'|'--fast')
+            readonly __OPT_FAST='true'
+            continue ;;
+        '-s'|'--server')
+            readonly __OPT_SERVER='true'
+            continue ;;
+        '-c'|'--client')
+            readonly __OPT_CLIENT='true'
+            continue ;;
+        '-m'|'--mode')
+            readonly __OPT_MODE="$1"
+            echo 'hi'
+            shift
+            continue ;;
+        '-l'|'--list')
+            command ls -1 /usr/share/tuterm/scripts
+            exit ;;
+        *)
+            # There are multiple file arguments -- error
+            if [ -n "$__ARG_FILE" ]; then
+                echo 'tuterm: only one file argument is allowed' >&2
+                exit 1
+            fi
+            __ARG_FILE="$(eval echo $opt)"
+            ;;
+    esac
+done
 
 # ┏━━━━━━━━━━━━━━━━━━━━━┓
 # ┃ ARGUMENT PROCESSING ┃
@@ -236,8 +254,13 @@ if [[ "$__ARG_FILE" != */* ]]; then
 fi
 __ARG_FILE="$(abspath "$__ARG_FILE")"
 
+if [ -z "$__ARG_FILE" ]; then
+    echo 'tuterm: error: no script file specified' >&2
+    exit 1
+fi
+
 if ! option 'client' && [ ! -f "$__ARG_FILE" ]; then
-    echo 'tuterm: tutorial file does not exist' >&2
+    echo 'tuterm: error: script file does not exist' >&2
     exit 1
 fi
 
@@ -296,13 +319,15 @@ trap __on_exit EXIT
 readonly TUTORIAL_FILE="$__ARG_FILE"
 . "$(realpath "$__ARG_FILE")"   # Load tutorial script
 
-# Run configuration defined in the tutorial file
-configure "$__ARG_CMD"
+# Load the script's own configuration
+[ "$(type -t configure)" = 'function' ] && configure
+
+# Complete missing configuration options
 [ -z "$DELAY_SEP" ]     && DELAY_SEP="$DELAY"
 [ -z "$DELAY_PROMPT" ]  && DELAY_PROMPT="$DELAY"
 
 setup                           # Perform any additional setup for the tutorial
-clear
+# clear
 run
 
 # vim: filetype=sh foldmethod=syntax
