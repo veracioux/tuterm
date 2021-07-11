@@ -159,12 +159,14 @@ back to \fBDELAY\fR if undefined
       \fBterminal-colors.d(5)\fR
 .RE
 
+\fBTUTERM_NAME\fR \- friendly name of the script that is currently running
+
 \fBSHELL\fR \- which shell's prompt to use (TODO)
 
 The following read-only variables are available in tutorial scripts:
 .SS
 Read-only variables
-\fBTUTORIAL_FILE\fR \- path to the tutorial file that is currently running
+\fBTUTERM_SCRIPT\fR \- path to the script file that is currently running
 
 \fBNOTE\fR: Variable names that start with \fItwo underscores\fR are reserved
 for tuterm's internal use, so don't define them.
@@ -192,7 +194,9 @@ by the variable \fBCOLOR_MESSAGE\fR.
 .RE
 
 \fBmessage\fR (alias: \fBm\fR)
-    print a message to the user if tutorial mode is on
+    print a message to the user if tutorial mode is on.
+
+    Accepts same options as bash's \fBecho\fR.
 
 \fBMessage\fR (alias: \fBM\fR)
     print a message to the user in tutorial or demo mode
@@ -242,6 +246,9 @@ TODO
 -
 .UR https://github.com/tem-cli/tem
 tem
+.UE
+.UR TODO
+tuterm-collection
 .UE
 
 .SH SEE ALSO

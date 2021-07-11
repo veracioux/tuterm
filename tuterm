@@ -3,6 +3,8 @@
 PREFIX='/usr/local'
 __VERSION='0.0.0'
 
+# TODO Make the recent changes work in client-server mode
+
 # ┏━━━━━━━━━━━━━━━━━━┓
 # ┃ Helper functions ┃
 # ┗━━━━━━━━━━━━━━━━━━┛
@@ -110,7 +112,7 @@ readonly -f message; alias m=message
 Message() {
     if option 'client'; then return 0; fi
     color message
-    echo "$*"
+    echo "$@"
     color 0
 }
 readonly -f Message; alias M=Message
@@ -127,19 +129,25 @@ readonly -f option; alias opt=option
 
 # Test if $1 is the active mode
 mode() {
-    [[ "$__OPT_MODE" = "$1"* ]]
+    if [ "$#" = 0 ]; then
+        echo "$__OPT_MODE"
+    else
+        [[ "$__OPT_MODE" = "$1"* ]]
+    fi
 }
 readonly -f mode
 
 fake_home() {
     if ! option 'client'; then
-        local random="$(shuf -erz -n20 {A..Z} {a..z} {0..9})"
-        local dest="/tmp/tuterm/$random"
-        if mkdir -p "$dest"; then
-            echo 'Error: could not create fake home!' >&2
+        local random="$(shuf -erz -n20 {A..Z} {a..z} {0..9} | tr -d '\0')"
+        local dest="/tmp/tuterm/HOME_$random"
+        if ! mkdir -p "$dest"; then
+            echo -e 'tuterm: error: could not create fake home!\nAborting.' >&2
             exit 1
         fi
         cd "$dest"
+        readonly __FAKE_HOME="$dest"
+        HOME="$dest"
     fi
 }
 readonly -f fake_home
@@ -326,10 +334,14 @@ __on_exit() {
         rm -f "/dev/shm/tuterm_server_$$"
         rm -f "/tmp/tuterm_server_$$" "/tmp/tuterm_client_$$"
     }
+    # Remove fake home if it was created
+    [ -n "$__FAKE_HOME" ] && rm -rf "$__FAKE_HOME"
 }
 trap __on_exit EXIT
 
-readonly TUTORIAL_FILE="$__ARG_FILE"
+# Prepare environment for the script
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+readonly TUTERM_SCRIPT="$__ARG_FILE"
 . "$(realpath "$__ARG_FILE")"   # Load tutorial script
 
 # Load the script's own configuration
@@ -338,8 +350,10 @@ readonly TUTORIAL_FILE="$__ARG_FILE"
 # Complete missing configuration options
 [ -z "$DELAY_SEP" ]     && DELAY_SEP="$DELAY"
 [ -z "$DELAY_PROMPT" ]  && DELAY_PROMPT="$DELAY"
+[ -z "$TUTERM_NAME" ]   && TUTERM_NAME="$(basename "$TUTERM_SCRIPT")"
 
-setup                           # Perform any additional setup for the tutorial
+# TODO remove this
+# [ "$(type -t setup)" = 'function'] && setup     # Perform any additional setup for the tutorial
 clear
 run
 

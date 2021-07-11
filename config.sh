@@ -7,7 +7,7 @@ COLOR_MESSAGE='1;32'
 
 # Command line prompt
 prompt() {
-    echo -n '$ '
+    echo -n "$TUTERM_NAME \$ "
 }
 
 # vim: filetype=bash
