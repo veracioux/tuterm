@@ -13,7 +13,7 @@ tuterm \- a framework to create tutorials and demonstrations of CLI programs.
 .SH DESCRIPTION
 
 \fBNOTE:\fR If you are using tuterm for the first time, it is recommended that
-you run \fBtuterm tuterm\fR for a very friendly introduction.
+you run \fBtuterm tuterm\fR for a very friendly introduction. (TODO)
 
 Tuterm is a script that provides functions to easily create or run tutorials for
 CLI programs. It allows you to create interactive tutorials, test program
@@ -45,7 +45,7 @@ client is started by running tuterm with the \fB--client\fR option. Instead of
 a script, the command will take a server ID as its argument.
 
 \fBTLDR:\fR If you are only interested in running scripts that someone else
-created, you won't need to read past the \fIOPTIONS\fR section.
+created, you won't need to read past the \fICONFIGURATION\fR section.
 
 .SH OPTIONS
 
@@ -100,8 +100,30 @@ Configuration files are loaded in the following order:
     - \fI$USER/.config/tuterm/config.sh\fR if it exists
 .RE
 
-The configuration options are documented inside the system configuration file,
-as well as in the \fIENVIRONMENT\fR section of this manual.
+.SS Configuration variables
+
+\fBSHELL\fR \- which shell's prompt to use (TODO)
+
+\fBDELAY\fR \- time it takes to type out a character
+
+\fBDELAY_SEP\fR \- time it takes to type out a separator (-, /, etc.). Falls
+back to \fBDELAY\fR if undefined
+
+\fBDELAY_PROMPT\fR \- time it takes to start typing after the prompt is displayed
+
+\fBCOLOR_CMDLINE\fR \- color of expected user input
+
+\fBCOLOR_WARNING\fR \- color of warning messages
+
+\fBCOLOR_MESSAGE\fR \- color of a message printed by the \fBmessage\fR command
+
+.RS 4
+\fBNOTE:\fR All colors are specified as ANSI color sequence as per
+      \fBterminal-colors.d(5)\fR
+.RE
+
+The configuration options are also documented inside the system configuration
+file.
 
 Individual tuterm scripts can perform their own configuration by defining a
 \fBconfigure\fR function. Unspecified options will be taken from any applicable
@@ -134,36 +156,21 @@ In most cases you don't even have to follow these guidelines, but it is
 recommended in order to get consistent behavior.
 
 .SH ENVIRONMENT
-The behavior of tuterm is configured using environment or shell variables.
+The behavior of tuterm scripts is configured using environment or shell
+variables.
 
 \fBNOTE:\fR All environment variables available to tuterm will be available to
 tuterm scripts as well.
 
 .SS
 Configuration variables
-\fBDELAY\fR \- time it takes to type out a character
 
-\fBDELAY_SEP\fR \- time it takes to type out a separator (-, /, etc.). Falls
-back to \fBDELAY\fR if undefined
-
-\fBDELAY_PROMPT\fR \- time it takes to start typing after the prompt is displayed
-
-\fBCOLOR_CMDLINE\fR \- color of expected user input
-
-\fBCOLOR_WARNING\fR \- color of warning messages
-
-\fBCOLOR_MESSAGE\fR \- color of a message printed by the \fBmessage\fR command
-
-.RS 4
-\fBNOTE:\fR All colors are specified as ANSI color sequence as per
-      \fBterminal-colors.d(5)\fR
-.RE
+The following configuration variables are available in addition to those documented
+in \fICONFIGURATION\fR:
 
 \fBTUTERM_NAME\fR \- friendly name of the script that is currently running
 
-\fBSHELL\fR \- which shell's prompt to use (TODO)
-
-The following read-only variables are available in tutorial scripts:
+The following read-only variables are available in scripts:
 .SS
 Read-only variables
 \fBTUTERM_SCRIPT\fR \- path to the script file that is currently running
