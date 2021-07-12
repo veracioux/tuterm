@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 
-PREFIX='/usr/local'
 __VERSION='0.0.0'
+[ -z "$__TUTERM_PREFIX" ] &&\
+    __TUTERM_PREFIX='/usr/local'
 
 # TODO Make the recent changes work in client-server mode
 
@@ -83,11 +84,9 @@ cmdline() {
             if ! option 'client'; then prompt; fi
             read __USER_INPUT                           # Read user input
             if [ "$__USER_INPUT" != "$*" ]; then        # Oops, wrong input
-                {
-                    color warning
-                    echo -e "Wrong command, try again"
-                    color 0
-                } >&2
+                color warning >&2
+                echo -e "Wrong command, try again" >&2
+                color 0 >&2
                 __OPT_FAST='true' cmdline "$@"
                 return
             fi
@@ -102,12 +101,6 @@ cmdline() {
 }
 readonly -f cmdline; alias c=cmdline
 
-# Message that works only in tutorial mode
-message() {
-    ! mode 'demo' && Message "$@"
-}
-readonly -f message; alias m=message
-
 # Message that works in both tutorial and demo mode
 Message() {
     if option 'client'; then return 0; fi
@@ -116,6 +109,12 @@ Message() {
     color 0
 }
 readonly -f Message; alias M=Message
+
+# Message that works only in tutorial mode
+message() {
+    ! mode 'demo' && Message "$@"
+}
+readonly -f message; alias m=message
 
 # Test if all options from $@ were provided to tuterm (only long format)
 option() {                                          # WARNING: bashisms ahead
@@ -168,7 +167,7 @@ readonly -f color
 # ┃ LOAD CONFIG ┃
 # ┗━━━━━━━━━━━━━┛
 
-__SYSTEM_CONFIG="$PREFIX/share/tuterm/config.sh"
+__SYSTEM_CONFIG="$__TUTERM_PREFIX/share/tuterm/config.sh"
 [ -f "$__SYSTEM_CONFIG" ] && . "$__SYSTEM_CONFIG"
 
 if [ -z "$TUTERM_CONFIG" ]; then
