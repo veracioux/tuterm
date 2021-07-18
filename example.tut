@@ -1,0 +1,19 @@
+# Example tuterm script
+
+configure() {
+    # This is where you configure how tuterm runs the script using shell
+    # variables. All available variables are documented in the manual and in the
+    # system configuration file.
+    :;
+}
+
+# Most scripts will want to place the following function here:
+# fake_home
+
+run() {
+    # This is where you design the flow of the script using the API commands
+    # like 'cmdline', 'message', etc.
+    :;
+}
+
+# vim: filetype=sh

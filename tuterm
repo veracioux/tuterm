@@ -14,7 +14,7 @@ __VERSION='0.0.0'
 # --fast option makes the output instantaneous
 __print_out() {
     if option 'fast'; then                  # Print it out instantaneously
-        echo -n "$@"
+        echo -n "$*"
     else                                    # Print char by char in real time
         local start_color_code=''
         for i in $(seq 1 "$(echo "$*" | wc -m)")    # For each character in $*
@@ -47,12 +47,8 @@ __print_out() {
     fi
 }
 
-# ┏━━━━━━━━━━━━━━━┓
-# ┃ API FUNCTIONS ┃
-# ┗━━━━━━━━━━━━━━━┛
-
-# Convert path to its canonical version (TODO hide this function from the API?)
-abspath() {
+# Convert path to its canonical version
+__abspath() {
     echo "$(
         [ -f "$1" ] && {                                    # File exists
             pushd "$(dirname "$1")" >/dev/null || return    # cd and print path
@@ -65,6 +61,11 @@ abspath() {
         }
     )"
 }
+
+
+# ┏━━━━━━━━━━━━━━━┓
+# ┃ API FUNCTIONS ┃
+# ┗━━━━━━━━━━━━━━━┛
 
 cmdline() {
     prompt
@@ -277,7 +278,7 @@ if [[ "$__ARG_FILE" != */* ]]; then
     # If default path contains the file take it, otherwise take the local file
     [ -f "$__file" ]  && __ARG_FILE="$__file"
 fi
-__ARG_FILE="$(abspath "$__ARG_FILE")"
+__ARG_FILE="$(__abspath "$__ARG_FILE")"
 
 if ! option 'client' && [ ! -f "$__ARG_FILE" ]; then
     echo 'tuterm: error: script file does not exist' >&2

@@ -96,7 +96,9 @@ Configuration files are loaded in the following order:
 2. User configuration at:
 
     - \fI$TUTERM_CONFIG\fR if it exists, otherwise
+
     - \fI$XDG_CONFIG_HOME/tuterm/config.sh\fR if it exists, otherwise
+
     - \fI$USER/.config/tuterm/config.sh\fR if it exists
 .RE
 
@@ -117,10 +119,8 @@ back to \fBDELAY\fR if undefined
 
 \fBCOLOR_MESSAGE\fR \- color of a message printed by the \fBmessage\fR command
 
-.RS 4
-\fBNOTE:\fR All colors are specified as ANSI color sequence as per
-      \fBterminal-colors.d(5)\fR
-.RE
+    \fBNOTE:\fR All colors are specified as ANSI color sequences as per
+          \fBterminal-colors.d(5)\fR
 
 The configuration options are also documented inside the system configuration
 file.
@@ -196,9 +196,15 @@ for the user's input. Repeat the prompt until the user's input is correct, then
 run the command that was input. Wrong input triggers a warning message colored
 by the variable \fBCOLOR_MESSAGE\fR.
 
-2. in demo mode: print the expected user input without any user interaction
+2. in demo mode: print the expected user input and execute the command without
+any user interaction.
 .RE
+
+\fBNOTE:\fR Keep in mind that quotes are parsed by bash.
 .RE
+
+\fBevaluate\fR (alias: \fBe\fR)
+    same as cmdline but does not run the command.
 
 \fBmessage\fR (alias: \fBm\fR)
     print a message to the user if tutorial mode is on.
@@ -250,10 +256,13 @@ User-overridable functions
 .SH EXAMPLES
 TODO
 .SS Projects using tuterm
+
 -
 .UR https://github.com/tem-cli/tem
 tem
 .UE
+
+-
 .UR TODO
 tuterm-collection
 .UE
