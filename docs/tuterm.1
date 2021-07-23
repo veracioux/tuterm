@@ -6,10 +6,6 @@ tuterm \- a framework to create tutorials and demonstrations of CLI programs.
 
 \fBtuterm\fR [\fIOPTIONS\fR] \fISCRIPT\fR
 
-\fBtuterm\fR \fB--mode\fR tutorial \fB--server\fR [\fIOPTIONS\fR] \fISCRIPT\fR
-
-\fBtuterm\fR \fB--mode\fR tutorial \fB--client\fR [\fIOPTIONS\fR] [\fISERVER_ID\fR]
-
 .SH DESCRIPTION
 
 \fBNOTE:\fR If you are using tuterm for the first time, it is recommended that
@@ -46,15 +42,6 @@ script that was installed on your system by another program.  Alternatively,
 By default, tuterm runs in tutorial mode. This can be changed using the
 \fB-m/--mode\fR option.
 
-In tutorial mode, you also have the option to run tuterm in a
-\fIserver-client\fR configuration. In this mode, one instance of tuterm (server)
-displays instructions to the user; another instance (client) takes user input
-and evaluates it. This way, you can have the instructions and your input side by
-side, for example using \fBtmux(1)\fR. The server is started by running tuterm
-with the \fB--server\fR option and takes a tutorial script as its argument. The
-client is started by running tuterm with the \fB--client\fR option. Instead of
-a script, the command will take a server ID as its argument.
-
 \fBTLDR:\fR If you are only interested in running scripts that someone else
 created, you won't need to read past the \fICONFIGURATION\fR section. If you
 want to create your own, plase read on.
@@ -79,25 +66,8 @@ Set the mode to \fIMODE\fR. The following modes are available: \fBtutorial\fR,
 Do not type out characters in real time.
 
 .TP
-.BR \-s ", " \-\-server
-This instance of tuterm will be a server, i.e. it will only show instructions to
-the user. To enable user interaction, run another tuterm instance with the
-\fB\-\-client\fR option.
-
-.TP
-.BR \-c ", " \-\-client
-This instance of tuterm will be a client. It will provide user interaction while
-a server (tuterm invoked with \fB\-\-server\fR) will show instructions to the
-user. The PID of the associated server is provided as an argument. If no
-argument is provided, a server will be determined automatically.
-
-.TP
 .BR \-l ", " \-\-list
 List installed tuterm scripts.
-
-.TP
-.BR \-L ", " \-\-list-active
-List running tuterm servers.
 
 .SH CONFIGURATION
 Configuration files are loaded in the following order:
