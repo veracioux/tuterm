@@ -24,13 +24,24 @@ functionality and create automated demonstrations - all with the same code.
 
 \fBscript\fR - a file that can be run by tuterm
 
-\fBmode\fR - the mode in which tuterm runs: \fItutorial, demo\fR or TODO.
+\fBmode\fR - the mode in which tuterm runs: \fItutorial\fR, \fIdemo\fR
+
+\fBtutoral mode\fR - interactive mode
+
+Tuterm tells you which commands you're supposed to run and you run them.
+
+\fBdemo mode\fR - non-interactive mode
+
+Tuterm performs the commands on its own. This is useful to quickly show what a
+program is capable of, especially when used together with \fBasciinema(1)\fR.
+
+TODO - other modes coming soon.
 .RE
 
-In order to start a script, simply run \fBtuterm\fR \fITUTORIAL\fR, replacing
-\fITUTORIAL\fR with the name of the tutorial you want to run. This will usually
-be a tutorial that was installed on the system by another program.
-Alternatively, \fITUTORIAL\fR can be any valid file path.
+In order to start a script, simply run \fBtuterm\fR \fISCRIPT\fR, replacing
+\fISCRIPT\fR with the name of the script you want to run. This will usually be a
+script that was installed on your system by another program.  Alternatively,
+\fISCRIPT\fR can be any valid file path.
 
 By default, tuterm runs in tutorial mode. This can be changed using the
 \fB-m/--mode\fR option.
@@ -45,7 +56,8 @@ client is started by running tuterm with the \fB--client\fR option. Instead of
 a script, the command will take a server ID as its argument.
 
 \fBTLDR:\fR If you are only interested in running scripts that someone else
-created, you won't need to read past the \fICONFIGURATION\fR section.
+created, you won't need to read past the \fICONFIGURATION\fR section. If you
+want to create your own, plase read on.
 
 .SH OPTIONS
 
@@ -104,7 +116,7 @@ Configuration files are loaded in the following order:
 
 .SS Configuration variables
 
-\fBSHELL\fR \- which shell's prompt to use (TODO)
+\fBSHELL\fR \- which shell's prompt to use (TODO this is a planned feature)
 
 \fBDELAY\fR \- time it takes to type out a character
 
@@ -125,7 +137,7 @@ back to \fBDELAY\fR if undefined
 The configuration options are also documented inside the system configuration
 file.
 
-Individual tuterm scripts can perform their own configuration by defining a
+Individual tuterm scripts can perform their own configuration inside a
 \fBconfigure\fR function. Unspecified options will be taken from any applicable
 configuration files.
 
@@ -137,19 +149,19 @@ command, and prints any output that command may have produced. Then it shows the
 next prompt and so on. Between each prompt, an instructional message may be
 shown (see shell functions \fBmessage\fR, \fBMessage\fR).
 
-Tuterm is written in bash, and tutorial files are nothing more than bash
+Tuterm is written in bash, and tuterm scripts are nothing more than bash
 scripts. You can basically do any shell scripting you want in them, but keep in
 mind a few caveats:
 
 .RS 4
-1. Script-local configuration is performed inside a user-defined \fBconfigure\fR
-function
+1. Script-local configuration should be performed inside a user-defined
+\fBconfigure\fR function.
 
 2. Predefined shell functions and some predefined shell variables provided by
 tuterm are read-only.
 
-3. Variable names that start with \fItwo underscores\fR are reserved
-for tuterm's internal use, so don't define them.
+3. Variable names that start with \fItwo underscores\fR are reserved for
+tuterm's internal use, so don't define them.
 
 .RE
 In most cases you don't even have to follow these guidelines, but it is
@@ -181,8 +193,8 @@ for tuterm's internal use, so don't define them.
 .SS
 Shell functions
 
-When defining tutorial scripts, there are a few predefined shell functions you
-can use.
+While creating your own tuterm scripts, there are a few predefined shell
+functions you can use:
 
 .TP
 \fBcmdline\fR (alias: \fBc\fR)
@@ -196,8 +208,8 @@ for the user's input. Repeat the prompt until the user's input is correct, then
 run the command that was input. Wrong input triggers a warning message colored
 by the variable \fBCOLOR_MESSAGE\fR.
 
-2. in demo mode: print the expected user input and execute the command without
-any user interaction.
+2. in demo mode: print the expected command and execute it without any user
+interaction.
 .RE
 
 \fBNOTE:\fR Keep in mind that quotes are parsed by bash.
@@ -215,10 +227,10 @@ any user interaction.
     print a message to the user in tutorial or demo mode
 
 \fBoption\fR (alias: \fBopt\fR)
-    query if the options passed as arguments have been set
+    query if the arguments have been passed as options to tuterm
 
 .RS 4
-Options are specified using their long names, excluding any hyphens.
+Options are specified using their long names, excluding any prefix hyphens.
 .RE
 
 \fBmode\fR
@@ -232,7 +244,7 @@ identifying substring will do.
 \fBfake_home\fR
     create a fake home directory and cd to it
 
-    The contents of \fB$HOME\fR will be modified accordingly.
+    The environment variable \fB$HOME\fR will be modified accordingly.
 
 \fBcolor\fR
 .RS 4
@@ -247,24 +259,33 @@ Color is reset to default using \fBcolor 0\fR.
 
 .SS
 User-overridable functions
-\fBprompt\fR \- command line prompt
+\fBprompt\fR \- custom command line prompt
 
-\fBconfigure\fR \- initial configuration for the tutorial
+\fBconfigure\fR \- configuration for the script
 
-\fBrun\fR \- this is where the tutorial is run
+\fBrun\fR \- herein lies the meat of the script
 
 .SH EXAMPLES
-TODO
+Here's a list of tutorials that help you use tuterm:
+
+.SS Tuterm tutorials
+
+- \fBtuterm\fR - brief introduction
+
+Simply run them as \fBtuterm \fITUTORIAL_NAME\fR (of course).
+
 .SS Projects using tuterm
+
+TODO: just placeholders, disregard for now.
 
 -
 .UR https://github.com/tem-cli/tem
-tem
+\fBtem\fR (TODO)
 .UE
 
 -
 .UR TODO
-tuterm-collection
+\fBtuterm-collection\fR
 .UE
 
 .SH SEE ALSO
