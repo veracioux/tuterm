@@ -18,11 +18,11 @@ Key features:
 * Well documented
 * Doesn't reinvent the wheel
 
-**UNDER CONSTRUCTION:** [A collection of tutorials for your favorite CLI programs](https://github.com/HarisGusic/tuterm-collection)
+**UNDER CONSTRUCTION:** [A collection of tutorials for your favorite CLI programs](collection)
 
 # Installation
 
-After downloading a release or cloning this repository, simply run
+After cloning this repository or downloading the source code, simply run
 
 ```shell
 make install
@@ -37,7 +37,7 @@ Everything is documented inside the man page that is installed with tuterm.
 
 # Contributing
 
-Please, feel free to report any issues or feature requests [here](https://github.com/HarisGusic/tuterm/issues).
+Please, feel free to report any issues or feature requests.
 But before you do that, have a look at [TODO](./TODO.org).
 (this file will steadily dissolve into GitHub issues)
 
@@ -47,3 +47,5 @@ want to add a new feature, open an issue so we can discuss it first.
 Everyone is welcome to contribute.
 
 *A note: Tuterm is a simple program, so most issues or features should be a good choice for a beginner.*
+
+[collection]: https://github.com/HarisGusic/tuterm-collection

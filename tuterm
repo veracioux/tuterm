@@ -22,7 +22,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-__VERSION='0.0.0'
+__TUTERM_VERSION='develop'
 [ -z "$__TUTERM_PREFIX" ] &&\
     __TUTERM_PREFIX='/usr/local'
 
@@ -252,7 +252,7 @@ do
             __usage
             exit ;;
         '-v'|'--version')
-            echo "tuterm version $__VERSION"
+            echo "tuterm version $__TUTERM_VERSION"
             exit ;;
         '-f'|'--fast')
             readonly __OPT_FAST='true'
