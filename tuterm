@@ -11,9 +11,11 @@ __VERSION='0.0.0'
 # Print $* as if the user were typing it on a keyboard (using DELAY* variables)
 # --fast option makes the output instantaneous
 __print_out() {
-    if option 'fast'; then                  # Print it out instantaneously
+    if option 'fast' || [ -n "$__ENV_FAST" ]; then
+        # Print it out instantaneously
         echo -n "$*"
-    else                                    # Print char by char in real time
+    else
+        # Print char by char in real time
         local start_color_code=''
         for i in $(seq 1 "$(echo "$*" | wc -m)")    # For each character in $*
         do
@@ -60,15 +62,23 @@ __abspath() {
     )"
 }
 
-
 # ┏━━━━━━━━━━━━━━━┓
 # ┃ API FUNCTIONS ┃
 # ┗━━━━━━━━━━━━━━━┛
 
 cmdline() {
+    evaluate "$@"
+    # Run the command that was entered into the command line
+     "$@"
+}
+readonly -f cmdline; alias c=cmdline
+
+evaluate() {
     prompt
     stty -echo
-    option 'fast' || sleep $DELAY_PROMPT    # Wait a small delay after prompt
+    if ! option 'fast' && [ -z "$__ENV_FAST" ]; then
+        sleep $DELAY_PROMPT                 # Wait a small delay after prompt
+    fi
     if ! mode 'demo'; then
         color cmdline
     fi
@@ -82,14 +92,12 @@ cmdline() {
             color warning >&2
             echo -e "Wrong command, try again" >&2
             color 0 >&2
-            __OPT_FAST='true' cmdline "$@"
+            __ENV_FAST='true' cmdline "$@"
             return
         fi
     fi
-    # Run the command that was entered into the command line
-    "$@"
 }
-readonly -f cmdline; alias c=cmdline
+readonly -f evaluate; alias e=evaluate
 
 # Message that works in both tutorial and demo mode
 Message() {
@@ -126,8 +134,12 @@ mode() {
 readonly -f mode
 
 fake_home() {
-    local random="$(shuf -erz -n20 {A..Z} {a..z} {0..9} | tr -d '\0')"
-    local dest="/tmp/tuterm/HOME_$random"
+    if [ "$#" -gt 0 ]; then
+        local dest="$1"
+    else
+        local random="$(shuf -erz -n20 {A..Z} {a..z} {0..9} | tr -d '\0')"
+        local dest="/tmp/tuterm/HOME_$random"
+    fi
     if ! mkdir -p "$dest"; then
         echo -e 'tuterm: error: could not create fake home!\nAborting.' >&2
         exit 1
@@ -182,7 +194,7 @@ __arguments=$(getopt --options 'hvpflm:'\
 __usage() {
     echo -e 'usage: tuterm [-h] [-f] [COMMAND] FILE'
     echo -e '\npositional arguments:'
-    echo -e '  FILE                 \tsource file for the tutorial'
+    echo -e '  FILE                 \tscript file'
     echo -e '\noptions:'
     echo -e '  -h, --help           \tshow this help message and exit'
     echo -e '  -v, --version        \tprint tuterm version'
@@ -204,6 +216,7 @@ for i in "${!__arguments[@]}"; do
 done
 
 __OPT_FAST=''
+__ENV_FAST=''                   # Used in cmdline as a substitute for __OPT_FAST
 __OPT_MODE='tutorial'
 __ARG_FILE=''
 
@@ -225,7 +238,7 @@ do
             readonly __OPT_MODE="${__options[((i+1))]}"
             continue ;;
         '-l'|'--list')
-            ls -1 /usr/share/tuterm/scripts
+            ls -1 "$__TUTERM_PREFIX/share/tuterm/scripts"
             exit ;;
     esac
 done

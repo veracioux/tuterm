@@ -1,6 +1,6 @@
 .TH TUTERM 1 "" "" "User Commands"
 .SH NAME
-tuterm \- a framework to create tutorials and demonstrations of CLI programs.
+tuterm \- a framework for real-time tutorials and demonstrations of CLI programs.
 .SH SYNOPSIS
 \fBtuterm\fR [\fB--help\fR] [\fB--version\fR]
 
@@ -81,7 +81,7 @@ Configuration files are loaded in the following order:
 
     - \fI$XDG_CONFIG_HOME/tuterm/config.sh\fR if it exists, otherwise
 
-    - \fI$USER/.config/tuterm/config.sh\fR if it exists
+    - \fI~/.config/tuterm/config.sh\fR if it exists
 .RE
 
 .SS Configuration variables
@@ -214,7 +214,9 @@ identifying substring will do.
 \fBfake_home\fR
     create a fake home directory and cd to it
 
-    The environment variable \fB$HOME\fR will be modified accordingly.
+    If an argument is specified, that directory will be used. If not, a random
+    directory will be created under \fI/tmp/tuterm\fR. The environment variable
+    \fB$HOME\fR will be modified accordingly.
 
 \fBcolor\fR
 .RS 4
@@ -257,6 +259,9 @@ TODO: just placeholders, disregard for now.
 .UR TODO
 \fBtuterm-collection\fR
 .UE
+
+You can find an empty example tutorial in
+\fI$PREFIX/share/tuterm/example.tut\fR.
 
 .SH SEE ALSO
 bash(1), asciinema(1)
