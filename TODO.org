@@ -1,0 +1,42 @@
+* Features
+** TODO Use $SHELL's prompt
+   This is what I intended to be the killer feature of tuterm. Here's the idea:
+   Currently the user inputs the expected commands after being prompted by
+   either the default prompt or a custom one. What I would like is for the user
+   to be prompted by their own shell (bash, zsh, fish, etc)! This would also
+   allow for shell completions and syntax highlighting. Then tuterm would take
+   the line they entered, check if it matches the expected command and then run
+   it or re-prompt the user.
+
+   From what I understand this would have to be done using pty's or using the
+   ~expect~ package. My knowledge about this is scarce, so I'll have to read up on
+   it. In the meanwhile, any ideas are welcome.
+** TODO Keybindings
+   We should provide keybindings to do the following:
+
+   - Just perform the expected command without the user having to enter it
+     (in tutorial mode)
+   - Free roam mode: a mode in which the user can execute any commands and
+     experiment in any way.
+   - Skip a command without executing it (warning: the rest of the script may
+     have unexpected behavior)
+   - Show current progress: ~command_no / total_commands~
+** TODO Transcript option
+   Save a log of your session somewhere perhaps. To be honest this is just a
+   knee jerk idea and I haven't actually thought out what to do with it :)
+** TODO Use ls command in -l option
+** TODO File structure under script path
+   Figure out a nice file structure under ~/usr/share/tuterm/scripts~.
+   - Do we allow placing scripts subfolders?
+   - Where can additional files be stored that the script depends on?
+   - Do we enforce the use of an extension?
+* Maintenance
+** TODO Setup a strategy for testing
+** TODO Create a changelog
+   I'm new to maintaining open source software. So I'm going to need time to
+   establish some good practices here. I would appreciate any guidance from
+   people with more experience.
+** TODO AUR
+** TODO Make packages for other distros
+   I have only ever used Arch to a significant degree, so this will probably
+   have to be done by someone else. Or, I can do it but it will have to wait then.
