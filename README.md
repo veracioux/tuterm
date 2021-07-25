@@ -18,7 +18,7 @@ Key features:
 * Well documented
 * Doesn't reinvent the wheel
 
-**UNDER CONSTRUCTION:** [A collection of tutorials for your favorite CLI programs](collection)
+**UNDER CONSTRUCTION:** [A collection of tutorials for your favorite CLI programs][collection]
 
 # Installation
 
@@ -37,7 +37,7 @@ Everything is documented inside the man page that is installed with tuterm.
 
 # Contributing
 
-Please, feel free to report any issues or feature requests.
+Please, feel free to report any issues or feature requests [here][issues].
 But before you do that, have a look at [TODO](./TODO.org).
 (this file will steadily dissolve into GitHub issues)
 
@@ -49,3 +49,4 @@ Everyone is welcome to contribute.
 *A note: Tuterm is a simple program, so most issues or features should be a good choice for a beginner.*
 
 [collection]: https://github.com/HarisGusic/tuterm-collection
+[issues]: https://github.com/HarisGusic/tuterm/issues
