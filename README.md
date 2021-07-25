@@ -1,5 +1,11 @@
 <h1 align="center">tuterm</h1>
 
+<p align="center">
+  <a href="https://asciinema.org/a/427112" target="_blank">
+    <img src="https://asciinema.org/a/427112.svg" />
+  </a>
+</p>
+
 Tuterm is a framework for running and creating real-time interactive tutorials
 and demonstrations of CLI programs.
 

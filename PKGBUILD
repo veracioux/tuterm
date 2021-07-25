@@ -1,4 +1,4 @@
-# Maintainer: Haris Gušić <harisgusic.dev@gmail.com>
+# Maintainer: Haris Gušić <harisgusic dot dev at gmail dot com>
 pkgname=tuterm
 pkgver=0.1.0
 pkgrel=1
@@ -8,7 +8,7 @@ url="https://github.com/HarisGusic/tuterm"
 license=('MIT')
 depends=()
 optdepends=('asciinema')
-source=("git+https://github.com/HarisGusic/tuterm#tag=v0.1.0")
+source=("git+https://github.com/HarisGusic/tuterm#tag=v$pkgver")
 noextract=()
 md5sums=('SKIP')
 validpgpkeys=()
