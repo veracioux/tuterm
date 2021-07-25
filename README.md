@@ -1,6 +1,11 @@
 <h1 align="center">tuterm</h1>
 
 <p align="center">
+  <a href="https://aur.archlinux.org/packages/tuterm/"> <img src="https://img.shields.io/aur/version/tuterm?label=AUR" alt="AUR"/> </a>
+  <a href="./LICENSE"><img src="https://img.shields.io/badge/License-MIT-blueviolet" alt="License"/></a>
+</p>
+
+<p align="center">
   <a href="https://asciinema.org/a/427112" target="_blank">
     <img src="https://asciinema.org/a/427112.svg" />
   </a>
