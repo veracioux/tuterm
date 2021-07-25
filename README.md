@@ -12,6 +12,7 @@ Key features:
 * Learn at your own pace
 
 **For tutorial creators**
+* Nothing more than a bash extension
 * Create interactive tutorials and non-interactive demos with the same code
 * Simple framework and minimalistic design
 * Well documented
@@ -45,4 +46,4 @@ want to add a new feature, open an issue so we can discuss it first.
 
 Everyone is welcome to contribute.
 
-*A note:* Tuterm is a simple program, so most issues or features should be a good choice for a beginner.
+*A note: Tuterm is a simple program, so most issues or features should be a good choice for a beginner.*
