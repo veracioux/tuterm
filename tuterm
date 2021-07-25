@@ -192,7 +192,7 @@ __arguments=$(getopt --options 'hvpflm:'\
 [ $? != 0 ] && exit
 
 __usage() {
-    echo -e 'usage: tuterm [-h] [-f] [COMMAND] FILE'
+    echo -e 'usage: tuterm [OPTIONS] FILE'
     echo -e '\npositional arguments:'
     echo -e '  FILE                 \tscript file'
     echo -e '\noptions:'
