@@ -3,7 +3,7 @@ PREFIX ?= /usr/local
 install:
 	@# Inject a PREFIX variable definition into the tuterm script
 	mkdir -p _build
-	sed "0,/^__TUTERM_PREFIX=.*/s::__TUTERM_PREFIX='/${PREFIX}':" \
+	sed "0,/__TUTERM_PREFIX=.*/s::__TUTERM_PREFIX='/${PREFIX}':" \
 		tuterm > _build/tuterm
 	mkdir -p "${DESTDIR}/${PREFIX}/bin" \
 			 "${DESTDIR}/${PREFIX}/share/man/man1" \
