@@ -19,7 +19,7 @@ functionality and create automated demonstrations - all with the same code.
 
 \fBmode\fR - the mode in which tuterm runs: \fItutorial\fR, \fIdemo\fR
 
-\fBtutoral mode\fR - interactive mode
+\fBtutorial mode\fR - interactive mode
 
 Tuterm tells you which commands you're supposed to run and you run them.
 
@@ -43,6 +43,10 @@ file will be used.
 
 By default, tuterm runs in tutorial mode. This can be changed using the
 \fB-m/--mode\fR option.
+
+Any commands you run in a tutorial will be run in a temporary directory. So
+don't worry if you see \fB~\fR as the current directory in a tutorial script.
+That is not your actual home directory, but a fake one.
 
 \fBTLDR:\fR If you are only interested in running scripts that someone else
 created, you won't need to read past the \fICONFIGURATION\fR section. If you
@@ -70,6 +74,15 @@ Set the mode to \fIMODE\fR. The following modes are available: \fBtutorial\fR,
 .TP
 .BR \-f ", " \-\-fast
 Do not type out characters in real time.
+
+.TP
+.BR \-\-init-config
+Create an initial user configuration at
+
+    \fI$XDG_CONFIG_HOME/tuterm/config.sh\fR
+
+If \fI$XDG_CONFIG_HOME\fR is not available, \fI~/.config/tuterm/config.sh\fR
+will be created instead.
 
 .SH CONFIGURATION
 Configuration files are loaded in the following order:
@@ -216,9 +229,9 @@ identifying substring will do.
 \fBfake_home\fR
     create a fake home directory and cd to it
 
-    If an argument is specified, that directory will be used. If not, a random
-    directory will be created under \fI/tmp/tuterm\fR. The environment variable
-    \fB$HOME\fR will be modified accordingly.
+    If an argument is specified, that directory will be used. If not, a
+    random directory will be created under \fI/tmp/tuterm\fR. The environment
+    variable \fI$HOME\fR will be modified accordingly.
 
 \fBcolor\fR
 .RS 4

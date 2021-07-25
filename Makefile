@@ -1,9 +1,9 @@
 PREFIX ?= /usr/local
 
 install:
-	mkdir -p "${DESTDIR}/${PREFIX}/bin"             		\
-			 "${DESTDIR}/${PREFIX}/share/man/man1"  		\
-			 "${DESTDIR}/${PREFIX}/share/tuterm"			\
+	mkdir -p "${DESTDIR}/${PREFIX}/bin" \
+			 "${DESTDIR}/${PREFIX}/share/man/man1" \
+			 "${DESTDIR}/${PREFIX}/share/tuterm" \
 			 "${DESTDIR}/${PREFIX}/share/tuterm/scripts"
 	@# Inject a PREFIX variable definition into the tuterm script
 	mkdir -p _build
@@ -13,6 +13,12 @@ install:
 	install -Dm644 docs/tuterm.1    "${DESTDIR}/${PREFIX}/share/man/man1/"
 	install -Dm644 config.sh        "${DESTDIR}/${PREFIX}/share/tuterm/"
 	install -Dm644 example.tut      "${DESTDIR}/${PREFIX}/share/tuterm/"
+
+uninstall:
+	rm -rf \
+		"${DESTDIR}/${PREFIX}/bin/tuterm" \
+		"${DESTDIR}/${PREFIX}/share/man/man1/tuterm.1" \
+		"${DESTDIR}/${PREFIX}/share/tuterm"
 
 pacman:
 	mkdir -p _build/pacman
