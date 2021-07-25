@@ -8,9 +8,6 @@ tuterm \- a framework for real-time tutorials and demonstrations of CLI programs
 
 .SH DESCRIPTION
 
-\fBNOTE:\fR If you are using tuterm for the first time, it is recommended that
-you run \fBtuterm tuterm\fR for a very friendly introduction. (TODO)
-
 Tuterm is a script that provides functions to easily create or run tutorials for
 CLI programs. It allows you to create interactive tutorials, test program
 functionality and create automated demonstrations - all with the same code.
@@ -31,13 +28,18 @@ Tuterm tells you which commands you're supposed to run and you run them.
 Tuterm performs the commands on its own. This is useful to quickly show what a
 program is capable of, especially when used together with \fBasciinema(1)\fR.
 
-TODO - other modes coming soon.
+TODO - another mode(s) coming soon.
 .RE
 
 In order to start a script, simply run \fBtuterm\fR \fISCRIPT\fR, replacing
 \fISCRIPT\fR with the name of the script you want to run. This will usually be a
 script that was installed on your system by another program.  Alternatively,
 \fISCRIPT\fR can be any valid file path.
+
+If there is a local script with the same name as an installed script, the
+installed one will be used. If you want to use the local one, you should make it
+explicit like ./\fISCRIPT\fR. If the file name contains any slashes, the local
+file will be used.
 
 By default, tuterm runs in tutorial mode. This can be changed using the
 \fB-m/--mode\fR option.
@@ -57,6 +59,10 @@ Prints help message.
 Prints program version.
 
 .TP
+.BR \-l ", " \-\-list
+List the installed tuterm scripts.
+
+.TP
 .BR \-m ", " \-\-mode " \fIMODE\fR"
 Set the mode to \fIMODE\fR. The following modes are available: \fBtutorial\fR,
 \fBdemo\fR. In the absence of this option, tuterm defaults to tutorial mode.
@@ -64,10 +70,6 @@ Set the mode to \fIMODE\fR. The following modes are available: \fBtutorial\fR,
 .TP
 .BR \-f ", " \-\-fast
 Do not type out characters in real time.
-
-.TP
-.BR \-l ", " \-\-list
-List installed tuterm scripts.
 
 .SH CONFIGURATION
 Configuration files are loaded in the following order:
@@ -238,13 +240,16 @@ User-overridable functions
 \fBrun\fR \- herein lies the meat of the script
 
 .SH EXAMPLES
-Here's a list of tutorials that help you use tuterm:
 
-.SS Tuterm tutorials
+You can find an empty example tutorial in
 
-- \fBtuterm\fR - brief introduction
+    \fI$PREFIX/share/tuterm/example.tut\fR
 
-Simply run them as \fBtuterm \fITUTORIAL_NAME\fR (of course).
+The stock configuration file can be found in
+
+    \fI$PREFIX/share/tuterm/config.sh\fR
+
+Alternatively, you can run \fBtuterm --init-config\fR to get yourself going.
 
 .SS Projects using tuterm
 
@@ -259,9 +264,6 @@ TODO: just placeholders, disregard for now.
 .UR TODO
 \fBtuterm-collection\fR
 .UE
-
-You can find an empty example tutorial in
-\fI$PREFIX/share/tuterm/example.tut\fR.
 
 .SH SEE ALSO
 bash(1), asciinema(1)

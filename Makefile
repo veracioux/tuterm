@@ -12,7 +12,7 @@ install:
 	install -Dm755 _build/tuterm    "${DESTDIR}/${PREFIX}/bin/"
 	install -Dm644 docs/tuterm.1    "${DESTDIR}/${PREFIX}/share/man/man1/"
 	install -Dm644 config.sh        "${DESTDIR}/${PREFIX}/share/tuterm/"
-	install -Dm644 tutorial         "${DESTDIR}/${PREFIX}/share/tuterm/scripts/tuterm"
+	install -Dm644 example.tut      "${DESTDIR}/${PREFIX}/share/tuterm/"
 
 pacman:
 	mkdir -p _build/pacman
