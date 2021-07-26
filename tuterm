@@ -91,7 +91,7 @@ __abspath() {
 cmdline() {
     evaluate "$@"
     # Run the command that was entered into the command line
-    "$@"
+    eval "$*"
 }
 readonly -f cmdline; alias c=cmdline
 
@@ -159,9 +159,21 @@ fake_home() {
     if [ "$#" -gt 0 ]; then
         local dest="$1"
     else
-        local random
-        random="$(shuf -erz -n20 {A..Z} {a..z} {0..9} | tr -d '\0')"
-        local dest="/tmp/tuterm/HOME_$random"
+        # Find all home<NUM> subdirectories under /tmp/tuterm and create the
+        # directory home<NUM+1>
+        local homedirs="$(ls -d -1 /tmp/tuterm/home* 2>/dev/null)"
+        # Get last (sorted) directory of the form /tmp/tuterm/home*
+        local lasthome="$(echo "$homedirs" | sort | tail -1)"
+        # Get the suffix number
+        # local num="$(echo "$lasthome" | sed 's:.*\([0-9]\+\)$:\1:')"
+        local num="$(echo "$lasthome" | sed 's:[^0-9]*\([0-9]*\)$:\1:')"
+        if [ -z "$homedirs" ]; then
+            local dest="/tmp/tuterm/home"
+        else
+            # Increment the number
+            let num++
+            local dest="/tmp/tuterm/home$num"
+        fi
     fi
     if ! mkdir -p "$dest"; then
         echo -e 'tuterm: error: could not create fake home!\nAborting.' >&2
@@ -169,7 +181,7 @@ fake_home() {
     fi
     cd "$dest" || exit
     readonly __FAKE_HOME="$dest"
-    HOME="$dest"
+    export HOME="$dest"
 }
 readonly -f fake_home
 
