@@ -36,6 +36,7 @@ Key features:
 
 The following script defines a short tutorial/demo for the command `ls`.
 ```bash
+# file: ls_tutorial
 configure() {
     DELAY=0.09
     DELAY_SEP=0.12
@@ -59,7 +60,7 @@ run() {
     c ls -l
 }
 ```
-This file is then run as:
+This script is run as:
 ```shell
 tuterm ls_tutorial --mode MODE
 ```
