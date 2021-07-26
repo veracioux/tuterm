@@ -91,7 +91,7 @@ __abspath() {
 cmdline() {
     evaluate "$@"
     # Run the command that was entered into the command line
-     "$@"
+    "$@"
 }
 readonly -f cmdline; alias c=cmdline
 

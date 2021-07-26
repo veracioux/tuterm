@@ -10,7 +10,6 @@
     <img src="https://asciinema.org/a/427112.svg" />
   </a>
 </p>
-
 Tuterm is a framework for running and creating real-time interactive tutorials
 and demonstrations of CLI programs.
 
@@ -21,6 +20,7 @@ Key features:
 * Customizable
 * Step by step instructions
 * Learn at your own pace
+* No mistakes possible
 
 **For tutorial creators**
 * Nothing more than a bash extension
@@ -28,8 +28,57 @@ Key features:
 * Simple framework and minimalistic design
 * Well documented
 * Doesn't reinvent the wheel
+* 100% repeatable
 
 **UNDER CONSTRUCTION:** [A collection of tutorials for your favorite CLI programs][collection]
+
+# Example
+
+The following script defines a short tutorial/demo for the command `ls`.
+```bash
+configure() {
+    DELAY=0.09
+    DELAY_SEP=0.12
+    DELAY_PROMPT=1.5
+    COLOR_MESSAGE='1;32'
+}
+
+fake_home
+
+run() {
+    mkdir dir
+    touch file1 file2 .file3 dir/file
+    M "Let's just run the command."
+    cmdline ls
+    M "The -a option shows hidden files."
+    # c is an alias for cmdline
+    c ls -a
+    M "The -R option recurses into directories"
+    c ls -R
+    M "You can also see the file modes"
+    c ls -l
+}
+```
+This file is then run as:
+```shell
+tuterm ls_tutorial --mode MODE
+```
+There are two supported MODEs: tutorial and demo. Demo mode types out the
+commands in real time just like a human would. Tutorial mode shows the user what
+to type and then waits for them to type it, correcting any mistakes.
+
+Demo mode is great for creating terminal recordings. The video below was
+generated using asciinema:
+
+```shell
+asciinema rec -c 'tuterm ls_tutorial --mode demo' ls_tutorial.cast
+```
+
+<p align="center">
+  <a href="https://asciinema.org/a/XT938YRCtcrPAhnCkd5H6MsS4" target="_blank">
+    <img src="https://asciinema.org/a/XT938YRCtcrPAhnCkd5H6MsS4.svg" />
+  </a>
+</p>
 
 # Installation
 

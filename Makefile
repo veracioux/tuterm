@@ -3,11 +3,10 @@ VERSION ?= 0.1.0
 
 install:
 	@# Inject a __TUTERM_PREFIX variable definition into the tuterm script
-	mkdir -p _build
-	sed "0,/__TUTERM_PREFIX=.*/s::__TUTERM_PREFIX='/${PREFIX}':" \
-		tuterm > _build/tuterm
 	@# Inject a __TUTERM_VERSION variable definition into the tuterm script
-	sed "0,/__TUTERM_VERSION=.*/s::__TUTERM_VERSION='${VERSION}':" \
+	mkdir -p _build
+	sed -e "0,/__TUTERM_PREFIX=.*/s::__TUTERM_PREFIX='/${PREFIX}':"   \
+		-e "0,/__TUTERM_VERSION=.*/s::__TUTERM_VERSION='${VERSION}':" \
 		tuterm > _build/tuterm
 	@# Install
 	mkdir -p "${DESTDIR}/${PREFIX}/bin" \
@@ -17,7 +16,7 @@ install:
 	install -Dm755 _build/tuterm    "${DESTDIR}/${PREFIX}/bin/"
 	install -Dm644 docs/tuterm.1    "${DESTDIR}/${PREFIX}/share/man/man1/"
 	install -Dm644 config.sh        "${DESTDIR}/${PREFIX}/share/tuterm/"
-	install -Dm644 example.tut      "${DESTDIR}/${PREFIX}/share/tuterm/"
+	install -Dm755 example.tut      "${DESTDIR}/${PREFIX}/share/tuterm/"
 
 uninstall:
 	rm -rf \
