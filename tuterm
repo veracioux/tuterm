@@ -38,23 +38,25 @@ __print_out() {
         echo -n "$*"
     else
         # Print char by char in real time
-        local start_color_code=''
+        local start_color_code
+        start_color_code=''
         for i in $(seq 1 "$(echo "$*" | wc -m)")    # For each character in $*
         do
-            local char="$(echo -n "$*" | cut -c $i | tr -d '\n')"
+            local char
+            char="$(echo -n "$*" | cut -c "$i" | tr -d '\n')"
             # Wait a certain delay (as if a user were typing it)
             if echo "$char" | grep -q "[a-zA-Z0-9]" || [ "$char" = "$__prev_char" ]
             then
-                sleep $DELAY
+                sleep "$DELAY"
             else
                 # Separator characters take a different time to print
-                sleep $DELAY_SEP
+                sleep "$DELAY_SEP"
             fi
             echo -n "$char"
             # If character with code \033 is encountered, everything until m is
             # considered part of a color code sequence. These characters are
             # printed instantaneously.
-            if [ "$char" = "$(echo "\033")" ]; then
+            if [ "$char" = $'\033' ]; then
                 start_color_code='true'
                 continue
             elif [ -n "$start_color_code" ] && [ "$char" = 'm' ]; then
@@ -65,23 +67,21 @@ __print_out() {
             # Repeating characters will be printed using DELAY even if they are separators
             __prev_char="$char"
         done
-        sleep $DELAY
+        sleep "$DELAY"
     fi
 }
 
 # Convert path to its canonical version
 __abspath() {
-    echo "$(
-        [ -f "$1" ] && {                                    # File exists
-            pushd "$(dirname "$1")" >/dev/null || return    # cd and print path
-            echo "$PWD/$(basename "$1")"
-            popd >/dev/null
-        } || {
-            pushd "$1" >/dev/null 2>/dev/null || return
-            pwd
-            popd >/dev/null
-        }
-    )"
+    if [ -f "$1" ]; then                                # File exists
+        pushd "$(dirname "$1")" >/dev/null || return    # cd and print path
+        echo "$PWD/$(basename "$1")"
+        popd >/dev/null || return
+    else
+        pushd "$1" >/dev/null 2>/dev/null || return
+        pwd
+        popd >/dev/null || return
+    fi
 }
 
 # ┏━━━━━━━━━━━━━━━┓
@@ -99,7 +99,7 @@ evaluate() {
     prompt
     stty -echo
     if ! option 'fast' && [ -z "$__ENV_FAST" ]; then
-        sleep $DELAY_PROMPT                 # Wait a small delay after prompt
+        sleep "$DELAY_PROMPT"               # Wait a small delay after prompt
     fi
     if ! mode 'demo'; then
         color cmdline
@@ -109,7 +109,7 @@ evaluate() {
     if mode 'tutorial'; then
         prompt
         __USER_INPUT=''
-        read __USER_INPUT                           # Read user input
+        read -r __USER_INPUT                        # Read user input
         if [ "$__USER_INPUT" != "$*" ]; then        # Oops, wrong input
             color warning >&2
             echo -e "Wrong command, try again" >&2
@@ -159,14 +159,15 @@ fake_home() {
     if [ "$#" -gt 0 ]; then
         local dest="$1"
     else
-        local random="$(shuf -erz -n20 {A..Z} {a..z} {0..9} | tr -d '\0')"
+        local random
+        random="$(shuf -erz -n20 {A..Z} {a..z} {0..9} | tr -d '\0')"
         local dest="/tmp/tuterm/HOME_$random"
     fi
     if ! mkdir -p "$dest"; then
         echo -e 'tuterm: error: could not create fake home!\nAborting.' >&2
         exit 1
     fi
-    cd "$dest"
+    cd "$dest" || exit
     readonly __FAKE_HOME="$dest"
     HOME="$dest"
 }
@@ -189,7 +190,7 @@ readonly -f color
 # ┗━━━━━━━━━━━━━┛
 
 __SYSTEM_CONFIG="$__TUTERM_PREFIX/share/tuterm/config.sh"
-[ -f "$__SYSTEM_CONFIG" ] && . "$__SYSTEM_CONFIG"
+[ -f "$__SYSTEM_CONFIG" ] && source "$__SYSTEM_CONFIG"
 
 if [ -z "$TUTERM_CONFIG" ]; then
     if [ -n "$XDG_CONFIG_HOME" ]; then
@@ -198,7 +199,7 @@ if [ -z "$TUTERM_CONFIG" ]; then
         TUTERM_CONFIG="$HOME/.config/tuterm/config.sh"
     fi
 fi
-[ -f "$TUTERM_CONFIG" ] && . "$TUTERM_CONFIG"
+[ -f "$TUTERM_CONFIG" ] && source "$TUTERM_CONFIG"
 
 # Shell configuration
 shopt -s expand_aliases
@@ -220,7 +221,8 @@ __usage() {
     echo -e '  --init-config        \tcreate an initial user config file'
 }
 __list_scripts() {
-    local list="$(ls -1 "$__TUTERM_PREFIX/share/tuterm/scripts")"
+    local list
+    list="$(ls -1 "$__TUTERM_PREFIX/share/tuterm/scripts")"
     if [ -z "$list" ]; then
         echo "No tuterm scripts are installed on your system."
         echo
@@ -356,7 +358,7 @@ trap __on_exit EXIT
 # Prepare environment for the script
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 readonly TUTERM_SCRIPT="$__ARG_FILE"
-. "$(realpath "$__ARG_FILE")"   # Load tutorial script
+source "$(realpath "$__ARG_FILE")"   # Load tuterm script
 
 # Load the script's own configuration
 [ "$(type -t configure)" = 'function' ] && configure
