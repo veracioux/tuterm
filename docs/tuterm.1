@@ -201,7 +201,7 @@ Read-only variables
 for tuterm's internal use, so don't define them.
 
 .SS
-Shell functions
+Shell functions (API)
 
 While creating your own tuterm scripts, there are a few predefined shell
 functions you can use:
@@ -267,6 +267,18 @@ Colors are supported in two formats. The first is an ANSI sequence as per
 color is taken from the corresponding \fBCOLOR_*\fR variable. For example,
 \fBcolor warning\fR will take the color from the variable \fBCOLOR_WARNING\fR.
 Color is reset to default using \fBcolor 0\fR.
+.RE
+
+\fBset_option\fR
+.RS 4
+set commandline options at runtime
+
+Usage: \fBset_option \fIoption value\fR
+
+Use this command if you want the script to behave as if a certain command line
+option has been set. The option name must be the long name without the
+two beginning slashes (e.g. \fBfast\fR instead of \fB--fast\fR). For options
+without arguments, a non-empty value sets the option as active.
 .RE
 
 \fBextend\fR
