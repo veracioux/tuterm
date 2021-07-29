@@ -204,6 +204,10 @@ extend() {
     eval "_old_$1 () $(declare -f "$1" | tail -n +2)"
 }
 
+sleep() {
+    option 'fast' || command sleep "$@"
+}
+
 # ┏━━━━━━━━━━━━━┓
 # ┃ LOAD CONFIG ┃
 # ┗━━━━━━━━━━━━━┛
