@@ -269,6 +269,28 @@ color is taken from the corresponding \fBCOLOR_*\fR variable. For example,
 Color is reset to default using \fBcolor 0\fR.
 .RE
 
+\fBextend\fR
+.RS 4
+redefine a function in terms of its previous definition
+
+If you want to change the behavior of a function \fIfun\fR, you must first run
+\fBextend \fIfun\fR. Then redefine the function as you would normally do in
+bash. Inside the function you can call _old_fun which will perform the old
+behavior of the function.
+
+Example:
+.RS 4
+
+.EX
+.nf
+\fBextend\fR my_function
+fun() {
+    \fBecho\fR "New actions..."
+    _old_my_function
+}
+.fi
+.RE
+
 .SS
 User-overridable functions
 \fBprompt\fR \- custom command line prompt
