@@ -93,7 +93,7 @@ cmdline() {
     # Run the command that was entered into the command line
     eval "$*"
 }
-readonly -f cmdline; alias c=cmdline
+alias c=cmdline
 
 evaluate() {
     prompt
@@ -119,7 +119,7 @@ evaluate() {
         fi
     fi
 }
-readonly -f evaluate; alias e=evaluate
+alias e=evaluate
 
 # Message that works in both tutorial and demo mode
 Message() {
@@ -127,13 +127,13 @@ Message() {
     echo "$@"
     color 0
 }
-readonly -f Message; alias M=Message
+alias M=Message
 
 # Message that works only in tutorial mode
 message() {
     ! mode 'demo' && Message "$@"
 }
-readonly -f message; alias m=message
+alias m=message
 
 # Test if all options from $@ were provided to tuterm (only long format)
 option() {                                          # WARNING: bashisms ahead
@@ -143,7 +143,7 @@ option() {                                          # WARNING: bashisms ahead
     done
     return 0
 }
-readonly -f option; alias opt=option
+alias opt=option
 
 # Test if $1 is the active mode
 mode() {
@@ -153,7 +153,6 @@ mode() {
         [[ "$__OPT_MODE" = "$1"* ]]
     fi
 }
-readonly -f mode
 
 fake_home() {
     if [ "$#" -gt 0 ]; then
@@ -180,10 +179,9 @@ fake_home() {
         exit 1
     fi
     cd "$dest" || exit
-    readonly __FAKE_HOME="$dest"
+    __FAKE_HOME="$dest"
     export HOME="$dest"
 }
-readonly -f fake_home
 
 # Set color for printing. See manpage for details.
 color() {
@@ -195,19 +193,16 @@ color() {
         echo -ne "\033[$1m";
     fi
 }
-readonly -f color
 
 # Usage: set_option option value
 set_option() {
     eval "__OPT_${1^^}=$2"
 }
-readonly -f set_option
 
 # Extend an existing function with additional functionality
 extend() {
     eval "_old_$1 () $(declare -f "$1" | tail -n +2)"
 }
-readonly -f extend
 
 # ┏━━━━━━━━━━━━━┓
 # ┃ LOAD CONFIG ┃
@@ -303,10 +298,10 @@ do
             echo "tuterm version $__TUTERM_VERSION"
             exit ;;
         '-f'|'--fast')
-            readonly __OPT_FAST='true'
+            __OPT_FAST='true'
             continue ;;
         '-m'|'--mode')
-            readonly __OPT_MODE="${__options[((i+1))]}"
+            __OPT_MODE="${__options[((i+1))]}"
             continue ;;
         '-l'|'--list')
             __list_scripts
@@ -358,9 +353,6 @@ fi
 
 [ -z "$__ARG_FILE" ] && { echo 'tuterm: no file specified' >&2; exit 1; }
 
-# Make argument variables read-only
-readonly __ARG_FILE __ARG_PID
-
 # ┏━━━━━━━━━━━━┓
 # ┃ RUN SCRIPT ┃
 # ┗━━━━━━━━━━━━┛
@@ -381,7 +373,7 @@ trap __on_exit EXIT
 
 # Prepare environment for the script
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-readonly TUTERM_SCRIPT="$__ARG_FILE"
+TUTERM_SCRIPT="$__ARG_FILE"
 source "$(realpath "$__ARG_FILE")"   # Load tuterm script
 
 # Load the script's own configuration
