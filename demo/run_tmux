@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+
+tmux new-session 'asciinema play customized1.cast; sleep 5.6' ';'   \
+    split-window 'asciinema play customized2.cast; sleep 4.2' ';'   \
+    split-window 'asciinema play customized3.cast; sleep 1.0' ';'   \
+    select-layout even-horizontal                                   \
+    > /dev/null

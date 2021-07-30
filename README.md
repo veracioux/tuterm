@@ -4,12 +4,14 @@
   <a href="https://aur.archlinux.org/packages/tuterm/"> <img src="https://img.shields.io/aur/version/tuterm?label=AUR" alt="AUR"/> </a>
   <a href="./LICENSE"><img src="https://img.shields.io/badge/License-MIT-blueviolet" alt="License"/></a>
 </p>
-
 <p align="center">
-  <a href="https://asciinema.org/a/427112" target="_blank">
-    <img src="https://asciinema.org/a/427112.svg" />
+  <a href="https://asciinema.org/a/427932" target="_blank">
+    <img src="https://gist.github.com/HarisGusic/66336d488e8d87c7b3fb696c5dbd93d1/raw/4b8bc0b043faf166abc92e12fc0bfb5acea55345/tuterm-demo.svg" />
   </a>
 </p>
+
+**UNDER CONSTRUCTION:** [A collection of tutorials for your favorite CLI programs][collection]
+
 Tuterm is a framework for running and creating real-time interactive tutorials
 and demonstrations of CLI programs.
 
@@ -17,10 +19,16 @@ Key features:
 
 **For users**
 * Ridiculously easy to use
-* Customizable
 * Step by step instructions
 * Learn at your own pace
 * No mistakes possible
+* Customizable colors, delays and prompts
+
+<p align="center">
+  <a href="https://asciinema.org/a/428011" target="_blank">
+    <img src="https://gist.github.com/HarisGusic/66336d488e8d87c7b3fb696c5dbd93d1/raw/6b79b61de44e11e561c67b8f91446f14895e85ae/tuterm-customization-demo.svg" />
+  </a>
+</p>
 
 **For tutorial creators**
 * Nothing more than a bash extension
@@ -29,8 +37,6 @@ Key features:
 * Well documented
 * Doesn't reinvent the wheel
 * 100% repeatable
-
-**UNDER CONSTRUCTION:** [A collection of tutorials for your favorite CLI programs][collection]
 
 # Example
 
@@ -77,7 +83,7 @@ asciinema rec -c 'tuterm ls_tutorial --mode demo' ls_tutorial.cast
 
 <p align="center">
   <a href="https://asciinema.org/a/XT938YRCtcrPAhnCkd5H6MsS4" target="_blank">
-    <img src="https://asciinema.org/a/XT938YRCtcrPAhnCkd5H6MsS4.svg" />
+    <img src="https://gist.github.com/HarisGusic/66336d488e8d87c7b3fb696c5dbd93d1/raw/4b8bc0b043faf166abc92e12fc0bfb5acea55345/tuterm-example-ls.svg" />
   </a>
 </p>
 

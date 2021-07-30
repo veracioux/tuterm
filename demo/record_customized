@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+
+rec() {
+    rm -f "$2"
+    asciinema rec -c "$1" "$2"
+}
+
+rec './customized_git_demo 1' customized1.cast
+rec './customized_git_demo 2' customized2.cast
+rec './customized_git_demo 3' customized3.cast
+
+rec ./run_tmux customized_final.cast

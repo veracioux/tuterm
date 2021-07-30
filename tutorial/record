@@ -1,4 +1,0 @@
-#!/usr/bin/env sh
-
-rm -f tuterm.cast 2>/dev/null
-asciinema rec -c ./tutorial tuterm.cast

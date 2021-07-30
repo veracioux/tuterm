@@ -1,0 +1,43 @@
+#!/usr/bin/env bash
+
+tutfile=/tmp/tuterm_git_tutorial
+{
+    head -1 ./git
+    echo 'run() {'
+    echo git config --global init.defaultBranch 'master'
+    rm -rf /tmp/tutorial
+    echo touch file
+    tail -n +2 ./git
+    echo '}'
+} > "$tutfile"
+
+rm -rf /tmp/tutorial
+export HOME=/tmp/tuterm_tutorial
+mkdir -p "$HOME"
+rm -rf "$HOME"
+mkdir -p "$HOME/.config/tuterm"
+cp git_config.sh "$HOME/.config/tuterm/config.sh"
+
+{
+    echo 'TUTERM_NAME=""'
+    case "$1" in
+        2)
+            echo 'COLOR_MESSAGE="1;34"'
+            echo 'COLOR_CUSTOM_PROMPT="0;35"'
+            echo 'COLOR_CUSTOM_CMDLINE="1;33"'
+            echo 'DELAY="0.06"'
+            echo 'DELAY_SEP="0.3"'
+            echo 'DELAY_PROMPT="1.4"'
+            ;;
+        3)
+            echo 'COLOR_MESSAGE="1;31"'
+            echo 'COLOR_CUSTOM_PROMPT="1;33"'
+            echo 'COLOR_CUSTOM_CMDLINE="1;36"'
+            echo 'DELAY="0.14"'
+            echo 'DELAY_SEP="0.5"'
+            echo 'DELAY_PROMPT="1.7"'
+            ;;
+    esac
+} >> "$HOME/.config/tuterm/config.sh"
+
+HOME=/tmp/tuterm_tutorial tuterm -m demo "$tutfile"

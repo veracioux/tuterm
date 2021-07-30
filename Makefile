@@ -31,3 +31,4 @@ pacman:
 
 clean:
 	rm -rf _build
+	rm -rf demo/*.cast

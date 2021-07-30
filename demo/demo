@@ -1,0 +1,73 @@
+#!/usr/bin/env tuterm
+
+configure() {
+    DELAY='0.05s'
+    DELAY_SEP='0.2s'
+    DELAY_PROMPT='1s'
+
+    export TUTERM_CONFIG="$PWD/../config.sh"
+}
+
+prompt() {
+    echo -ne "\033[1;94m$TUTERM_NAME \033[1;35m$(pwd | sed "s:$HOME:~:")\033[0;33m $\033[0m "
+}
+
+TUTERM_NAME="git-$(mode)"
+
+rm -rf /tmp/tutorial
+fake_home /tmp/tutorial
+
+print_cmdline() {
+    prompt
+    sleep 1
+    color cmdline
+    __print_out "$@"
+    color 0; echo
+}
+
+run() {
+    git config --global init.defaultBranch 'master'
+    M "Welcome to git tutorial!"
+    sleep 1
+    echo
+
+    M "First tuterm shows you what command you have to run."
+    sleep 1
+    print_cmdline git init
+
+    M "Then it's your turn to run it."
+    prompt; sleep 1
+    __print_out git init; echo
+    git init
+
+    touch file
+
+    sleep 0.5
+    M "Let's stage a file"
+    print_cmdline git add file
+    sleep 0.5
+    prompt; sleep 1
+    __print_out git add fiel; echo
+    color warning
+    echo "Wrong command, try again"
+    prompt
+    sleep 1
+    __print_out git add file; echo
+    M "And so on..."
+    sleep 1.5
+    clear
+    M "Here's how it works"
+    sleep 1
+    echo
+    set_option mode demo
+
+    M "1. Someone creates a tutorial -- a special bash script."
+    e "$EDITOR" tutorial
+    script_dir="$(dirname "$TUTERM_SCRIPT")"
+    cp "$script_dir/git" ./tutorial
+    # A convoluted way to display an editor with a timeout
+    timeout 4 tmux new-session "$EDITOR tutorial" >/dev/null
+    M "2. And you just run it."
+    sleep 1
+    e tuterm tutorial
+}

@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+
+rm -f tuterm.cast 2>/dev/null
+asciinema rec -c ./demo tuterm.cast

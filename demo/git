@@ -1,0 +1,7 @@
+fake_home /tmp/tutorial
+
+M "Welcome to git tutorial!"
+c git init
+M "Let's stage a file"
+c git add file
+M "And so on..."

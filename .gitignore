@@ -1,3 +1,4 @@
 .tem/
 _build/
 tutorial/tuterm.cast
+demo/*.cast
