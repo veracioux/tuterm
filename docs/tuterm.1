@@ -293,6 +293,19 @@ User-overridable functions
 
 \fBrun\fR \- herein lies the meat of the script
 
+.SH INSTALLING SCRIPTS
+
+Scripts are installed under the \fI$PREFIX/share/tuterm/scripts\fR directory.
+\fI$PREFIX\fR depends on your distribution and method of installation, but it is
+most often \fI/usr\fR. You can install a script directly under this directory or
+in a subdirectory. Either way, the script can be launched from tuterm by name
+only, without the need to specify the subdirectory tree. If there are multiple
+scripts with the same name under two different directories, the user will be
+prompted to choose one of them.
+
+Hidden files (dotfiles) will not be available to the user from tuterm, so they
+are a good place to put any helper files that your scripts may use.
+
 .SH EXAMPLES
 
 You can find an empty example tutorial in

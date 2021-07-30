@@ -26,6 +26,8 @@ __TUTERM_VERSION='develop'
 [ -z "$__TUTERM_PREFIX" ] &&\
     __TUTERM_PREFIX='/usr/local'
 
+__SCRIPT_PATH="$__TUTERM_PREFIX/share/tuterm/scripts"
+
 # ┏━━━━━━━━━━━━━━━━━━┓
 # ┃ Helper functions ┃
 # ┗━━━━━━━━━━━━━━━━━━┛
@@ -114,8 +116,11 @@ evaluate() {
             color warning >&2
             echo -e "Wrong command, try again" >&2
             color 0 >&2
-            __ENV_FAST='true' cmdline "$@"
-            return
+            local fast_old
+            fast_old="$__OPT_FAST"
+            set_option fast 'true'
+            evaluate "$@"
+            set_option fast "$fast_old"
         fi
     fi
 }
@@ -161,12 +166,15 @@ fake_home() {
     else
         # Find all home<NUM> subdirectories under /tmp/tuterm and create the
         # directory home<NUM+1>
-        local homedirs="$(ls -d -1 /tmp/tuterm/home* 2>/dev/null)"
+        local homedirs
+        homedirs="$(ls -d -1 /tmp/tuterm/home* 2>/dev/null)"
         # Get last (sorted) directory of the form /tmp/tuterm/home*
-        local lasthome="$(echo "$homedirs" | sort | tail -1)"
+        local lasthome
+        lasthome="$(echo "$homedirs" | sort | tail -1)"
         # Get the suffix number
         # local num="$(echo "$lasthome" | sed 's:.*\([0-9]\+\)$:\1:')"
-        local num="$(echo "$lasthome" | sed 's:[^0-9]*\([0-9]*\)$:\1:')"
+        local num
+        num="$(echo "$lasthome" | sed 's:[^0-9]*\([0-9]*\)$:\1:')"
         if [ -z "$homedirs" ]; then
             local dest="/tmp/tuterm/home"
         else
@@ -241,7 +249,7 @@ __usage() {
 }
 __list_scripts() {
     local list
-    list="$(ls -1 "$__TUTERM_PREFIX/share/tuterm/scripts")"
+    list="$(ls -1 "$__SCRIPT_PATH")"
     if [ -z "$list" ]; then
         echo "No tuterm scripts are installed on your system."
         echo
@@ -337,16 +345,52 @@ else                                                    # Multiple arguments
     exit 1
 fi
 
-# ┏━━━━━━━━━━━━━━━━━━━━━┓
-# ┃ ARGUMENT PROCESSING ┃
-# ┗━━━━━━━━━━━━━━━━━━━━━┛
+# ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+# ┃ POSITIONAL ARGUMENT PROCESSING ┃
+# ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
 
-# File that doesn't contain / will be taken from the default path
+# File name that doesn't contain / will be taken from the default path
 if [[ "$__ARG_FILE" != */* ]]; then
     # TODO add user-specific scripts directory
-    __file="/usr/share/tuterm/scripts/$__ARG_FILE"
-    # If default path contains the file take it, otherwise take the local file
-    [ -f "$__file" ]  && __ARG_FILE="$__file"
+
+    __globstar_old_setting="$(shopt -p globstar)"
+    __nullglob_old_setting="$(shopt -p nullglob)"
+    shopt -s globstar
+    shopt -s nullglob
+
+    __candidates=("$__SCRIPT_PATH"/*/"$__ARG_FILE" )
+    if [ -f "$__SCRIPT_PATH/$__ARG_FILE" ]; then
+        __candidates=("$__SCRIPT_PATH/$__ARG_FILE" "${__candidates[@]}")
+    fi
+    __N="${#__candidates[@]}"
+    if [ "$__N" -gt 1 ]; then                           # More than 1 candidate
+        __i=1
+        echo -e "There are multiple matching scripts.\nChoose one by number: (default: 1)\n"
+        for __file in "${__candidates[@]}"; do
+            __file="$(echo "$__file" | sed "s:^$__SCRIPT_PATH/::")"
+            echo -e "\t$__i. $__file"
+            let __i++
+        done
+        echo
+        # Ask the user for their choice until they enter a valid number
+        while :; do
+            echo -ne "Your choice: "
+            read -r __choice >/dev/null
+            # Validate the choice
+            [ -z "$__choice" ] && __choice=1
+            if [[ "$__choice" =~ ^[1-9][0-9]*$ ]] && [ "$__choice" -le "$__N" ]; then
+                __ARG_FILE="${__candidates[$((__choice-1))]}"
+                break
+            fi
+        done
+    else                                                # 1 or 0 candidates
+        __file_under_path="$__candidates"
+        # If default path contains the file take it, otherwise take the local file
+        [ -f "$__file_under_path" ]  && __ARG_FILE="$__file_under_path"
+    fi
+
+    eval "$__globstar_old_setting"
+    eval "$__nullglob_old_setting"
 fi
 __ARG_FILE="$(__abspath "$__ARG_FILE")"
 
