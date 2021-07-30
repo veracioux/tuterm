@@ -37,6 +37,9 @@
    Implement an ~import_script~ (or by another name) function that allows us to
    make scripts that can be run on their own or combined to form a more
    comprehensive tutorial.
+** TODO Redefine function
+   Create a ~redefine~ API function that makes it easy to redefine a function in
+   terms of its previous definition.
 * Maintenance
 ** TODO Setup a strategy for testing
 ** TODO Create a changelog

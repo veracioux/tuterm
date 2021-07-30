@@ -199,11 +199,6 @@ set_option() {
     eval "__OPT_${1^^}=$2"
 }
 
-# Extend an existing function with additional functionality
-extend() {
-    eval "_old_$1 () $(declare -f "$1" | tail -n +2)"
-}
-
 sleep() {
     option 'fast' || command sleep "$@"
 }

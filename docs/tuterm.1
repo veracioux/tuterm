@@ -278,27 +278,6 @@ two beginning slashes (e.g. \fBfast\fR instead of \fB--fast\fR). For options
 without arguments, a non-empty value sets the option as active.
 .RE
 
-\fBextend\fR
-.RS 4
-redefine a function in terms of its previous definition
-
-If you want to change the behavior of a function \fIfun\fR, you must first run
-\fBextend \fIfun\fR. Then redefine the function as you would normally do in
-bash. Inside the function you can call _old_fun which will perform the old
-behavior of the function.
-
-Example:
-.RS 4
-
-.EX
-.nf
-\fBextend\fR my_function
-fun() {
-    \fBecho\fR "New actions..."
-    _old_my_function
-}
-.fi
-.RE
 .RE
 
 \fBsleep\fR
