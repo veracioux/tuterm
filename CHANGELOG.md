@@ -1,4 +1,4 @@
-# Version 0.1.1
+# Version 0.2.0
 
 ## Features
 
@@ -7,6 +7,7 @@
 - Better random home directory generation
 - New API functions: `set_option`, `sleep`
 - Script installation path now supports subdirectories
+- Improved input (now uses readline)
 
 ## Fixes
 

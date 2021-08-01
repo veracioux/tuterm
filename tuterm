@@ -92,8 +92,7 @@ __abspath() {
 
 cmdline() {
     evaluate "$@"
-    # Run the command that was entered into the command line
-    eval "$*"
+    eval "$*"           # Run the command that was entered into the command line
 }
 alias c=cmdline
 
@@ -110,17 +109,25 @@ evaluate() {
     stty echo
     if mode 'tutorial'; then
         prompt
-        __USER_INPUT=''
-        read -r __USER_INPUT                        # Read user input
-        if [ "$__USER_INPUT" != "$*" ]; then        # Oops, wrong input
+
+        # FIXME this is a temporary solution to add keybindings
+        bind '"\e[24;8~":kill-whole-line'                   2>/dev/null
+        bind -x '"\e[23;8~":"prompt"'                       2>/dev/null
+        bind '"\e[Z":"\e[24;8~.\e[24;8~\e[23;8~'"$*"'"'   2>/dev/null
+
+        local user_input
+        user_input=''
+        read -er user_input                                 # Read user input
+
+        if [ "$user_input" != "$*" ]; then                  # Oops, wrong input
             color warning >&2
             echo -e "Wrong command, try again" >&2
             color 0 >&2
             local fast_old
-            fast_old="$__OPT_FAST"
-            set_option fast 'true'
-            evaluate "$@"
-            set_option fast "$fast_old"
+            fast_old="$__OPT_FAST"          # Backup old value of fast option
+            set_option fast 'true'          # Override it temporarily
+            evaluate "$@"                   # Verify user input
+            set_option fast "$fast_old"     # Revert to old value
         fi
     fi
 }
