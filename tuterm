@@ -219,6 +219,22 @@ sleep() {
     option 'fast' || command sleep "$@"
 }
 
+# Usage: depends executable1 executable2 ...
+depends() {
+    local missing
+    missing=''
+    for arg in "$@"; do
+        which "$arg" >/dev/null 2>/dev/null || missing=("${missing[@]}" "$arg")
+    done
+    if [ -n "${missing[*]}" ]; then
+        echo -e "\033[31mtuterm: error: the following dependencies are not"\
+            "satisfied:"
+        printf '    %s\n' "${missing[@]}"
+        echo -ne "\033[0m"
+        exit 1
+    fi
+}
+
 # ┏━━━━━━━━━━━━━┓
 # ┃ LOAD CONFIG ┃
 # ┗━━━━━━━━━━━━━┛

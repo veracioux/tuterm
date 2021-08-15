@@ -1,3 +1,11 @@
+# Latest
+
+## Features
+
+- Added `depends` API function
+
+## Fixes
+
 # Version 0.2.0
 
 ## Features
