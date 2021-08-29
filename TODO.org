@@ -21,21 +21,9 @@
    - Skip a command without executing it (warning: the rest of the script may
      have unexpected behavior)
    - Show current progress: ~command_no / total_commands~
-** TODO Transcript option
-   Save a log of your session somewhere perhaps. To be honest this is just a
-   knee jerk idea and I haven't actually thought out what to do with it :)
-** TODO Use ls command in -l option
-** TODO Script dependencies
-   Let each tuterm script declare dependencies, and check for them before
-   running, notifying the user if any are missing.
 ** TODO Import scripts
    Implement an ~import_script~ (or by another name) function that allows us to
    make scripts that can be run on their own or combined to form a more
    comprehensive tutorial.
 * Maintenance
 ** TODO Setup a strategy for testing
-** TODO AUR
-** TODO Make packages for other distros
-   I have only ever used Arch to a significant degree, so this will probably
-   have to be done by someone else. Or, I can do it but it will have to wait then.
-
