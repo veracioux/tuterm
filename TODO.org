@@ -1,16 +1,4 @@
 * Features
-** TODO Use $SHELL's prompt
-   This is what I intended to be the killer feature of tuterm. Here's the idea:
-   Currently the user inputs the expected commands after being prompted by
-   either the default prompt or a custom one. What I would like is for the user
-   to be prompted by their own shell (bash, zsh, fish, etc)! This would also
-   allow for shell completions and syntax highlighting. Then tuterm would take
-   the line they entered, check if it matches the expected command and then run
-   it or re-prompt the user.
-
-   From what I understand this would have to be done using pty's or using the
-   ~expect~ package. My knowledge about this is scarce, so I'll have to read up on
-   it. In the meanwhile, any ideas are welcome.
 ** TODO Keybindings
    We should provide keybindings to do the following:
 
@@ -21,9 +9,8 @@
    - Skip a command without executing it (warning: the rest of the script may
      have unexpected behavior)
    - Show current progress: ~command_no / total_commands~
+
 ** TODO Import scripts
    Implement an ~import_script~ (or by another name) function that allows us to
    make scripts that can be run on their own or combined to form a more
    comprehensive tutorial.
-* Maintenance
-** TODO Setup a strategy for testing
