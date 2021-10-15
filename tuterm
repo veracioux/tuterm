@@ -124,10 +124,10 @@ evaluate() {
             echo -e "Wrong command, try again" >&2
             color 0 >&2
             local fast_old
-            fast_old="$__OPT_FAST"          # Backup old value of fast option
+            fast_old="$__OPT_FAST"          # Backup old value of --fast option
             set_option fast 'true'          # Override it temporarily
             evaluate "$@"                   # Verify user input
-            set_option fast "$fast_old"     # Revert to old value
+            set_option fast "$fast_old"     # Revert to old value of --fast
         fi
     fi
 }
@@ -254,9 +254,9 @@ fi
 # Shell configuration
 shopt -s expand_aliases
 
-# ┏━━━━━━━━━━━━━━━┓
-# ┃ PARSE OPTIONS ┃
-# ┗━━━━━━━━━━━━━━━┛
+# ┏━━━━━━━━━━━━━━━━━━━┓
+# ┃ PARSE CLI OPTIONS ┃
+# ┗━━━━━━━━━━━━━━━━━━━┛
 
 __usage() {
     echo -e 'usage: tuterm [OPTIONS] FILE'
