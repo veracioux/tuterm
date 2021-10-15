@@ -1,4 +1,5 @@
 <h1 align="center">tuterm</h1>
+<h2 align="center">Learn the CLI by doing instead of watching</h2>
 
 <p align="center">
   <a href="https://aur.archlinux.org/packages/tuterm/"> <img src="https://img.shields.io/aur/version/tuterm?label=AUR" alt="AUR"/> </a>
@@ -10,7 +11,7 @@
   </a>
 </p>
 
-**UNDER CONSTRUCTION:** [A collection of tutorials for your favorite CLI programs][collection]
+**Also check out:** [A collection of tutorials for your favorite CLI programs][collection]
 
 Tuterm is a framework for running and creating real-time interactive tutorials
 and demonstrations of CLI programs.
@@ -101,6 +102,8 @@ This will install tuterm under `/usr/local`. You can change this by setting `PRE
 # Documentation
 
 Everything is documented inside the man page that is installed with tuterm.
+
+# Projects using tuterm
 
 # Contributing
 
