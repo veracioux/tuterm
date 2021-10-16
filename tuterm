@@ -28,6 +28,8 @@ __TUTERM_VERSION='develop'
 
 __SCRIPT_PATH="$__TUTERM_PREFIX/share/tuterm/scripts"
 
+__CURRENT_COMMAND_INDEX=0
+
 # ┏━━━━━━━━━━━━━━━━━━┓
 # ┃ Helper functions ┃
 # ┗━━━━━━━━━━━━━━━━━━┛
@@ -86,6 +88,18 @@ __abspath() {
     fi
 }
 
+# Get total number of commands in run function of tuterm script
+__get_total_commands() {
+    declare -f run | grep "evaluate" | wc -l || declare -f run | grep "e " | wc -l
+}
+
+# Print progress indicator in the form current_command_index/total_commands
+__print_progress_indicator() {
+    total_commands=$(__get_total_commands)
+    tput cup $(tput lines) $(($(tput cols)-3))
+    echo "$__CURRENT_COMMAND_INDEX/$total_commands"
+}
+
 # ┏━━━━━━━━━━━━━━━┓
 # ┃ API FUNCTIONS ┃
 # ┗━━━━━━━━━━━━━━━┛
@@ -97,6 +111,8 @@ cmdline() {
 alias c=cmdline
 
 evaluate() {
+    let __CURRENT_COMMAND_INDEX=__CURRENT_COMMAND_INDEX+1
+    __print_progress_indicator
     prompt
     stty -echo
     if ! option 'fast' && [ -z "$__ENV_FAST" ]; then
