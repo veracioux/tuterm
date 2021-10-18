@@ -93,11 +93,18 @@ __get_total_commands() {
     declare -f run | grep "evaluate" | wc -l || declare -f run | grep "e " | wc -l
 }
 
-# Print progress indicator in the form current_command_index/total_commands
+# Print progress indicator in the form current_command_index/total_commands at right side of terminal line
 __print_progress_indicator() {
     total_commands=$(__get_total_commands)
-    tput cup $(tput lines) $(($(tput cols)-3))
-    echo "$__CURRENT_COMMAND_INDEX/$total_commands"
+    tput sc
+    terminal_width=$(tput cols)
+    command_length="$1"
+    progress_indicator="$__CURRENT_COMMAND_INDEX/$total_commands"
+    progress_indicator_length=$(expr length $progress_indicator)
+    x_offset=$((terminal_width-progress_indicator_length))
+    tput cuf $x_offset
+    printf "$progress_indicator"
+    tput rc
 }
 
 # ┏━━━━━━━━━━━━━━━┓
@@ -112,7 +119,8 @@ alias c=cmdline
 
 evaluate() {
     let __CURRENT_COMMAND_INDEX=__CURRENT_COMMAND_INDEX+1
-    __print_progress_indicator
+    command_length=$(expr length "$*")
+    __print_progress_indicator "$command_length"
     prompt
     stty -echo
     if ! option 'fast' && [ -z "$__ENV_FAST" ]; then
