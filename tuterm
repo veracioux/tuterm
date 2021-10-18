@@ -29,6 +29,7 @@ __TUTERM_VERSION='develop'
 __SCRIPT_PATH="$__TUTERM_PREFIX/share/tuterm/scripts"
 
 __CURRENT_COMMAND_INDEX=0
+__TOTAL_COMMAND_COUNT=0
 
 # ┏━━━━━━━━━━━━━━━━━━┓
 # ┃ Helper functions ┃
@@ -88,18 +89,23 @@ __abspath() {
     fi
 }
 
-# Get total number of commands in run function of tuterm script
-__get_total_commands() {
-    declare -f run | grep "evaluate" | wc -l || declare -f run | grep "e " | wc -l
+# Increment total number of commands in run function of tuterm script
+__increment_total_count() {
+    echo "INCREMENTING"
+    let __TOTAL_COMMAND_COUNT=__TOTAL_COMMAND_COUNT+1
+}
+
+# Empty function to alias all commands other than evaluate and cmdline to during dry run
+__:() {
+    :
 }
 
 # Print progress indicator in the form current_command_index/total_commands at right side of terminal line
 __print_progress_indicator() {
-    total_commands=$(__get_total_commands)
     tput sc
     terminal_width=$(tput cols)
     command_length="$1"
-    progress_indicator="$__CURRENT_COMMAND_INDEX/$total_commands"
+    progress_indicator="$__CURRENT_COMMAND_INDEX/$_TOTAL_COMMAND_COUNT"
     progress_indicator_length=$(expr length $progress_indicator)
     x_offset=$((terminal_width-progress_indicator_length))
     tput cuf $x_offset
@@ -481,6 +487,23 @@ source "$(realpath "$__ARG_FILE")"   # Load tuterm script
 
 clear
 [ -z "$__FAKE_HOME" ] && fake_home                      # For enhanced safety
+
+# Execute a dry run of the tuterm script's run function to increment total command count for progress indicator
+all_run_commands=$(declare -f run | awk '{print $1}' | tail -n +3 | head -n -1)
+for command in $all_run_commands; do
+    alias "$command"="__:"
+done
+alias {evaluate,e,cmdline,c}=__increment_total_count
+alias {Message,M,message,m,option,opt,mode,fake_home,color,set_option,sleep,depends}="__:"
+run
+
+# Execute actual run
+unalias -a
+alias c=cmdline
+alias e=evaluate
+alias M=Message
+alias m=message
+alias opt=option
 run
 
 # vim: filetype=sh foldmethod=syntax
