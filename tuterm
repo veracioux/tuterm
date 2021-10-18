@@ -91,7 +91,6 @@ __abspath() {
 
 # Increment total number of commands in run function of tuterm script
 __increment_total_count() {
-    echo "INCREMENTING"
     let __TOTAL_COMMAND_COUNT=__TOTAL_COMMAND_COUNT+1
 }
 
