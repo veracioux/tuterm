@@ -94,17 +94,12 @@ __increment_total_count() {
     let __TOTAL_COMMAND_COUNT=__TOTAL_COMMAND_COUNT+1
 }
 
-# Empty function to alias all commands other than evaluate and cmdline to during dry run
-__:() {
-    :
-}
-
 # Print progress indicator in the form current_command_index/total_commands at right side of terminal line
 __print_progress_indicator() {
     tput sc
     terminal_width=$(tput cols)
     command_length="$1"
-    progress_indicator="$__CURRENT_COMMAND_INDEX/$_TOTAL_COMMAND_COUNT"
+    progress_indicator="$__CURRENT_COMMAND_INDEX/$__TOTAL_COMMAND_COUNT"
     progress_indicator_length=$(expr length $progress_indicator)
     x_offset=$((terminal_width-progress_indicator_length))
     tput cuf $x_offset
@@ -112,17 +107,7 @@ __print_progress_indicator() {
     tput rc
 }
 
-# ┏━━━━━━━━━━━━━━━┓
-# ┃ API FUNCTIONS ┃
-# ┗━━━━━━━━━━━━━━━┛
-
-cmdline() {
-    evaluate "$@"
-    eval "$*"           # Run the command that was entered into the command line
-}
-alias c=cmdline
-
-evaluate() {
+__evaluate_command() {
     let __CURRENT_COMMAND_INDEX=__CURRENT_COMMAND_INDEX+1
     command_length=$(expr length "$*")
     __print_progress_indicator "$command_length"
@@ -159,6 +144,20 @@ evaluate() {
             set_option fast "$fast_old"     # Revert to old value
         fi
     fi
+}
+
+# ┏━━━━━━━━━━━━━━━┓
+# ┃ API FUNCTIONS ┃
+# ┗━━━━━━━━━━━━━━━┛
+
+cmdline() {
+    evaluate "$@"
+    eval "$*"           # Run the command that was entered into the command line
+}
+alias c=cmdline
+
+evaluate() {
+    __evaluate_command "$*"
 }
 alias e=evaluate
 
@@ -488,21 +487,25 @@ clear
 [ -z "$__FAKE_HOME" ] && fake_home                      # For enhanced safety
 
 # Execute a dry run of the tuterm script's run function to increment total command count for progress indicator
-all_run_commands=$(declare -f run | awk '{print $1}' | tail -n +3 | head -n -1)
-for command in $all_run_commands; do
-    alias "$command"="__:"
-done
-alias {evaluate,e,cmdline,c}=__increment_total_count
-alias {Message,M,message,m,option,opt,mode,fake_home,color,set_option,sleep,depends}="__:"
-run
+evaluate() {
+    __increment_total_count
+}
+e() {
+    __increment_total_count
+}
+tmp_dir=$( mktemp -d -t run-XXXXXXXXXX )
+cd "$tmp_dir"
+run > /dev/null
+rm -rf "$tmp_dir"
+cd "$HOME"
 
 # Execute actual run
-unalias -a
-alias c=cmdline
-alias e=evaluate
-alias M=Message
-alias m=message
-alias opt=option
+evaluate() {
+    __evaluate_command "$*"
+}
+e() {
+    __evaluate_command "$*"
+}
 run
 
 # vim: filetype=sh foldmethod=syntax
