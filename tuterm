@@ -28,6 +28,9 @@ __TUTERM_VERSION='develop'
 
 __SCRIPT_PATH="$__TUTERM_PREFIX/share/tuterm/scripts"
 
+__CURRENT_COMMAND_INDEX=0
+__TOTAL_COMMAND_COUNT=0
+
 # ┏━━━━━━━━━━━━━━━━━━┓
 # ┃ Helper functions ┃
 # ┗━━━━━━━━━━━━━━━━━━┛
@@ -86,17 +89,28 @@ __abspath() {
     fi
 }
 
-# ┏━━━━━━━━━━━━━━━┓
-# ┃ API FUNCTIONS ┃
-# ┗━━━━━━━━━━━━━━━┛
-
-cmdline() {
-    evaluate "$@"
-    eval "$*"           # Run the command that was entered into the command line
+# Increment total number of commands in run function of tuterm script
+__increment_total_count() {
+    let __TOTAL_COMMAND_COUNT=__TOTAL_COMMAND_COUNT+1
 }
-alias c=cmdline
 
-evaluate() {
+# Print progress indicator in the form current_command_index/total_commands at right side of terminal line
+__print_progress_indicator() {
+    tput sc
+    terminal_width=$(tput cols)
+    command_length="$1"
+    progress_indicator="$__CURRENT_COMMAND_INDEX/$__TOTAL_COMMAND_COUNT"
+    progress_indicator_length=$(expr length $progress_indicator)
+    x_offset=$((terminal_width-progress_indicator_length))
+    tput cuf $x_offset
+    printf "$progress_indicator"
+    tput rc
+}
+
+__evaluate_command() {
+    let __CURRENT_COMMAND_INDEX=__CURRENT_COMMAND_INDEX+1
+    command_length=$(expr length "$*")
+    __print_progress_indicator "$command_length"
     prompt
     stty -echo
     if ! option 'fast' && [ -z "$__ENV_FAST" ]; then
@@ -130,6 +144,20 @@ evaluate() {
             set_option fast "$fast_old"     # Revert to old value of --fast
         fi
     fi
+}
+
+# ┏━━━━━━━━━━━━━━━┓
+# ┃ API FUNCTIONS ┃
+# ┗━━━━━━━━━━━━━━━┛
+
+cmdline() {
+    evaluate "$@"
+    eval "$*"           # Run the command that was entered into the command line
+}
+alias c=cmdline
+
+evaluate() {
+    __evaluate_command "$*"
 }
 alias e=evaluate
 
@@ -457,6 +485,27 @@ source "$(realpath "$__ARG_FILE")"   # Load tuterm script
 
 clear
 [ -z "$__FAKE_HOME" ] && fake_home                      # For enhanced safety
+
+# Execute a dry run of the tuterm script's run function to increment total command count for progress indicator
+evaluate() {
+    __increment_total_count
+}
+e() {
+    __increment_total_count
+}
+tmp_dir=$( mktemp -d -t run-XXXXXXXXXX )
+cd "$tmp_dir"
+run > /dev/null
+rm -rf "$tmp_dir"
+cd "$HOME"
+
+# Execute actual run
+evaluate() {
+    __evaluate_command "$*"
+}
+e() {
+    __evaluate_command "$*"
+}
 run
 
 # vim: filetype=sh foldmethod=syntax
