@@ -94,8 +94,12 @@ __increment_total_count() {
     let __TOTAL_COMMAND_COUNT=__TOTAL_COMMAND_COUNT+1
 }
 
-# Print progress indicator in the form current_command_index/total_commands at right side of terminal line
+# Print progress indicator in the form current_command_index/total_commands at
+# right side of terminal line
 __print_progress_indicator() {
+    local terminal_width command_length progress_indicator \
+        progress_indicator_length x_offset
+
     tput sc
     terminal_width=$(tput cols)
     command_length="$1"
@@ -109,6 +113,7 @@ __print_progress_indicator() {
 
 __evaluate_command() {
     let __CURRENT_COMMAND_INDEX=__CURRENT_COMMAND_INDEX+1
+    local command_length
     command_length=$(expr length "$*")
     __print_progress_indicator "$command_length"
     prompt
@@ -243,7 +248,7 @@ set_option() {
     eval "__OPT_${1^^}=$2"
 }
 
-sleep() {
+__sleep_modal() {
     option 'fast' || command sleep "$@"
 }
 
@@ -486,26 +491,28 @@ source "$(realpath "$__ARG_FILE")"   # Load tuterm script
 clear
 [ -z "$__FAKE_HOME" ] && fake_home                      # For enhanced safety
 
-# Execute a dry run of the tuterm script's run function to increment total command count for progress indicator
-evaluate() {
-    __increment_total_count
-}
-e() {
-    __increment_total_count
-}
-tmp_dir=$( mktemp -d -t run-XXXXXXXXXX )
-cd "$tmp_dir"
-run > /dev/null
-rm -rf "$tmp_dir"
-cd "$HOME"
+# Dry run
+# ━━━━━━━
+# Execute a dry run of the tuterm script's run function to increment total
+# command count for progress indicator
+evaluate() { __increment_total_count; }
+sleep() { :; }
+exit() { :; }
 
+__TMP_DIR=$( mktemp -d -t run-XXXXXXXXXX )
+cd "$__TMP_DIR"
+HOME="$__TMP_DIR" PATH='' run 1>/dev/null 2>/dev/null
+rm -rf "$__TMP_DIR"
+cd "$HOME"
+export HOME="$__FAKE_HOME"
+
+# Actual run
+# ━━━━━━━━━━
 # Execute actual run
-evaluate() {
-    __evaluate_command "$*"
-}
-e() {
-    __evaluate_command "$*"
-}
+evaluate() { __evaluate_command "$@"; }
+sleep() { __sleep_modal "$@"; }
+exit() { builtin exit; }
+
 run
 
 # vim: filetype=sh foldmethod=syntax
