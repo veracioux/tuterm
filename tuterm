@@ -91,12 +91,14 @@ __abspath() {
 
 # Increment total number of commands in run function of tuterm script
 __increment_total_count() {
-    let __TOTAL_COMMAND_COUNT=__TOTAL_COMMAND_COUNT+1
+    ((__TOTAL_COMMAND_COUNT++))
 }
 
 # Print progress indicator in the form current_command_index/total_commands at
 # right side of terminal line
 __print_progress_indicator() {
+    if [ -z "$__OPT_PROGRESS" ]; then return; fi
+
     local terminal_width command_length progress_indicator \
         progress_indicator_length x_offset
 
@@ -112,7 +114,7 @@ __print_progress_indicator() {
 }
 
 __evaluate_command() {
-    let __CURRENT_COMMAND_INDEX=__CURRENT_COMMAND_INDEX+1
+    ((__CURRENT_COMMAND_INDEX++))
     local command_length
     command_length=$(expr length "$*")
     __print_progress_indicator "$command_length"
@@ -219,7 +221,7 @@ fake_home() {
             local dest="/tmp/tuterm/home"
         else
             # Increment the number
-            let num++
+            ((num++))
             local dest="/tmp/tuterm/home$num"
         fi
     fi
@@ -300,6 +302,7 @@ __usage() {
     echo -e '  -v, --version        \tprint tuterm version'
     echo -e '  -m, --mode MODE      \tselect MODE: tutorial (default) or demo'
     echo -e '  -f, --fast           \tdo not type characters in real time'
+    echo -e '  -p, --progress       \tprint tutorial/demo progress (experimental)'
     echo -e '  -l, --list           \tlist installed tuterm scripts'
     echo -e '  --init-config        \tcreate an initial user config file'
 }
@@ -328,7 +331,7 @@ if [ "$#" = 0 ]; then                               # Called with no arguments
 fi
 
 __arguments=$(getopt --options 'hvpflm:'\
-                        --long 'help,version,path,fast,list,mode:,init-config'\
+                        --long 'help,version,path,fast,progress,list,mode:,init-config'\
                         --name 'tuterm'\
                             -- "$@")
 [ $? != 0 ] && exit
@@ -348,6 +351,7 @@ done
 # Variable default values
 # ━━━━━━━━━━━━━━━━━━━━━━━
 __OPT_FAST=''
+__OPT_PROGRESS=''
 __ENV_FAST=''                   # Used in cmdline as a substitute for __OPT_FAST
 __OPT_MODE='tutorial'
 __ARG_FILE=''
@@ -367,6 +371,9 @@ do
             exit ;;
         '-f'|'--fast')
             __OPT_FAST='true'
+            continue ;;
+        '-p'|'--progress')
+            __OPT_PROGRESS='true'
             continue ;;
         '-m'|'--mode')
             __OPT_MODE="${__options[((i+1))]}"
@@ -425,7 +432,7 @@ if [[ "$__ARG_FILE" != */* ]]; then
         for __file in "${__candidates[@]}"; do
             __file="$(echo "$__file" | sed "s:^$__SCRIPT_PATH/::")"
             echo -e "\t$__i. $__file"
-            let __i++
+            ((__i++))
         done
         echo
         # Ask the user for their choice until they enter a valid number
@@ -495,16 +502,18 @@ clear
 # ━━━━━━━
 # Execute a dry run of the tuterm script's run function to increment total
 # command count for progress indicator
-evaluate() { __increment_total_count; }
-sleep() { :; }
-exit() { :; }
+if option 'progress'; then
+    evaluate() { __increment_total_count; }
+    sleep() { :; }
+    exit() { :; }
 
-__TMP_DIR=$( mktemp -d -t run-XXXXXXXXXX )
-cd "$__TMP_DIR"
-HOME="$__TMP_DIR" PATH='' run 1>/dev/null 2>/dev/null
-rm -rf "$__TMP_DIR"
-cd "$HOME"
-export HOME="$__FAKE_HOME"
+    __TMP_DIR=$( mktemp -d -t run-XXXXXXXXXX )
+    cd "$__TMP_DIR"
+    HOME="$__TMP_DIR" PATH='' run 1>/dev/null 2>/dev/null
+    rm -rf "$__TMP_DIR"
+    cd "$HOME"
+    export HOME="$__FAKE_HOME"
+fi
 
 # Actual run
 # ━━━━━━━━━━

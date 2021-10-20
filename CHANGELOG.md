@@ -3,6 +3,7 @@
 ## Features
 
 - Added `depends` API function
+- Added `--progress` option (experimental)
 
 ## Fixes
 
