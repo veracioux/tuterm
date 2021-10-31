@@ -202,9 +202,9 @@ mode() {
 }
 
 fake_home() {
-    [ -e "$__FAKE_HOME" ] && rm -rf "$__FAKE_HOME"
     if [ "$#" -gt 0 ]; then
         local dest="$1"
+        readonly __FAKE_HOME_CREATED_BY_USER='true'
     else
         # Find all home<NUM> subdirectories under /tmp/tuterm and create the
         # directory home<NUM+1>
@@ -230,8 +230,12 @@ fake_home() {
         exit 1
     fi
     cd "$dest" || exit
-    __FAKE_HOME="$dest"
+    readonly __FAKE_HOME="$dest"
     export HOME="$dest"
+    fake_home() {
+        echo -e "tuterm: error: fake home can only be created once!\nAborting."
+        exit 1
+    }
 }
 
 # Set color for printing. See manpage for details.
@@ -357,6 +361,7 @@ __OPT_MODE='tutorial'
 __ARG_FILE=''
 
 __FAKE_HOME=''
+__FAKE_HOME_CREATED_BY_USER=''
 
 # Parse options
 # ━━━━━━━━━━━━━
@@ -477,8 +482,10 @@ fi
 
 # Exit cleanup
 __on_exit() {
-    # Remove fake home if it was created
-    [ -n "$__FAKE_HOME" ] && rm -rf "$__FAKE_HOME"
+    # Remove fake home if it was created automatically, not by the user
+    if [ -z "$__FAKE_HOME_CREATED_BY_USER" ]; then
+        rm -rf "$__FAKE_HOME"
+    fi
 }
 trap __on_exit EXIT
 
@@ -496,7 +503,9 @@ source "$(realpath "$__ARG_FILE")"   # Load tuterm script
 [ -z "$TUTERM_NAME" ]   && TUTERM_NAME="$(basename "$TUTERM_SCRIPT")"
 
 clear
-[ -z "$__FAKE_HOME" ] && fake_home                      # For enhanced safety
+if [ -z "$__FAKE_HOME_CREATED_BY_USER" ]; then
+    fake_home                      # For enhanced safety
+fi
 
 # Dry run
 # ━━━━━━━

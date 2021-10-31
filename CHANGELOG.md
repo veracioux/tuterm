@@ -7,6 +7,8 @@
 
 ## Fixes
 
+- Enhanced safety of the `fake_home` function
+
 # Version 0.2.0
 
 ## Features

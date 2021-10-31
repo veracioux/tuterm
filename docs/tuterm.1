@@ -258,11 +258,18 @@ identifying substring will do.
 .RE
 
 \fBfake_home\fR
-    create a fake home directory and cd to it
+    use a custom fake home directory and cd to it
 
-    If an argument is specified, that directory will be used. If not, a
-    random directory will be created under \fI/tmp/tuterm\fR. The environment
-    variable \fI$HOME\fR will be modified accordingly.
+.RS 4
+The \fI$HOME\fR variable will be set (and exported) to the fake home path.
+.RE
+
+    \fBNOTES:\fR
+
+        - This function has no effect when called from inside the \fBrun\fR
+          function. Call it from the outside scope.
+        - For safety reasons, this function can only be called once.
+        - The fake home will not be deleted automatically
 
 \fBcolor\fR
 .RS 4
@@ -297,8 +304,9 @@ without arguments, a non-empty value sets the option as active.
 \fBdepends\fR
     declare executables on which the tuterm script depends
 
-    If any of the specified dependencies is not satisfied, print an error and
-    exit.
+.RS 4
+If any of the specified dependencies is not satisfied, print an error and exit.
+.RE
 
 .SS
 User-overridable functions
