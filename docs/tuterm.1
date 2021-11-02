@@ -316,6 +316,20 @@ User-overridable functions
 
 \fBrun\fR \- herein lies the meat of the script
 
+.SS Debugging functions
+
+\fBSKIP\fR
+    skip all subsequent tutorial/demo functions until \fBUNSKIP\fR is called.
+
+.RS 4
+Note that this only skips messages, prompts, etc. It does not skip the
+effects that tuterm functions create. This ensures that commands depending
+on the skipped commands run properly.
+.RE
+
+\fBUNSKIP\fR
+    undo the effects of \fBSKIP\fR.
+
 .SH INSTALLING SCRIPTS
 
 Scripts are installed under the \fI$PREFIX/share/tuterm/scripts\fR directory.

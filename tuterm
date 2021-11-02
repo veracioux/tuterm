@@ -114,10 +114,13 @@ __print_progress_indicator() {
 }
 
 __evaluate_command() {
+    [ -n "$__SKIP_ACTIVE" ] && return 0
+
     ((__CURRENT_COMMAND_INDEX++))
     local command_length
     command_length=$(expr length "$*")
     __print_progress_indicator "$command_length"
+
     prompt
     stty -echo
     if ! option 'fast' && [ -z "$__ENV_FAST" ]; then
@@ -170,6 +173,7 @@ alias e=evaluate
 
 # Message that works in both tutorial and demo mode
 Message() {
+    [ -n "$__SKIP_ACTIVE" ] && return 0
     color message
     echo "$@"
     color 0
@@ -178,6 +182,7 @@ alias M=Message
 
 # Message that works only in tutorial mode
 message() {
+    [ -n "$__SKIP_ACTIVE" ] && return 0
     ! mode 'demo' && Message "$@"
 }
 alias m=message
@@ -274,6 +279,23 @@ depends() {
     fi
 }
 
+# Debug functions
+# ━━━━━━━━━━━━━━━
+
+SKIP() {
+    color warning
+    echo TUTERM: DEBUG: SKIPPING USER INTERACTION
+    color 0
+    __SKIP_ACTIVE='true'
+}
+
+UNSKIP() {
+    color warning
+    echo TUTERM: DEBUG: UNSKIPPING USER INTERACTION
+    color 0
+    __SKIP_ACTIVE=''
+}
+
 # ┏━━━━━━━━━━━━━┓
 # ┃ LOAD CONFIG ┃
 # ┗━━━━━━━━━━━━━┛
@@ -292,6 +314,21 @@ fi
 
 # Shell configuration
 shopt -s expand_aliases
+
+# ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+# ┃ SET VARIABLE DEFAULT VALUES ┃
+# ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+
+__OPT_FAST=''
+__OPT_PROGRESS=''
+__ENV_FAST=''                   # Used in cmdline as a substitute for __OPT_FAST
+__OPT_MODE='tutorial'
+__ARG_FILE=''
+
+__SKIP_ACTIVE=''                # Flag used by the SKIP and UNSKIP functions
+
+__FAKE_HOME=''
+__FAKE_HOME_CREATED_BY_USER=''
 
 # ┏━━━━━━━━━━━━━━━━━━━┓
 # ┃ PARSE CLI OPTIONS ┃
@@ -351,17 +388,6 @@ for i in "${!__arguments[@]}"; do
         break
     fi
 done
-
-# Variable default values
-# ━━━━━━━━━━━━━━━━━━━━━━━
-__OPT_FAST=''
-__OPT_PROGRESS=''
-__ENV_FAST=''                   # Used in cmdline as a substitute for __OPT_FAST
-__OPT_MODE='tutorial'
-__ARG_FILE=''
-
-__FAKE_HOME=''
-__FAKE_HOME_CREATED_BY_USER=''
 
 # Parse options
 # ━━━━━━━━━━━━━

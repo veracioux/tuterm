@@ -2,6 +2,7 @@
 
 ## Features
 
+- Added `SKIP` and `UNSKIP` for debugging
 - Added `depends` API function
 - Added `--progress` option (experimental)
 
