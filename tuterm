@@ -137,7 +137,8 @@ __evaluate_command() {
         # FIXME this is a temporary solution to add keybindings
         bind '"\e[24;8~":kill-whole-line'                   2>/dev/null
         bind -x '"\e[23;8~":"prompt"'                       2>/dev/null
-        bind '"\e[Z":"\e[24;8~.\e[24;8~\e[23;8~'"$*"'"'   2>/dev/null
+        bind '"\e[Z":"\e[24;8~.\e[24;8~\e[23;8~'"$*"'
+"'   2>/dev/null
 
         local user_input
         user_input=''
@@ -421,7 +422,7 @@ do
                 exit 1
             fi
             mkdir -p "$XDG_CONFIG_HOME/tuterm"
-            cp "$__TUTERM_PREFIX/share/tuterm/config.sh" "$XDG_CONFIG_HOME/tuterm/"
+            cp "${__SYSTEM_CONFIG}" "$XDG_CONFIG_HOME/tuterm/"
             echo "User configuration created at $XDG_CONFIG_HOME/tuterm/config.sh"
             exit ;;
     esac
