@@ -5,7 +5,7 @@ install:
 	@# Inject a __TUTERM_PREFIX variable definition into the tuterm script
 	@# Inject a __TUTERM_VERSION variable definition into the tuterm script
 	mkdir -p _build
-	sed -e "0,/__TUTERM_PREFIX=.*/s::__TUTERM_PREFIX='/${PREFIX}':"   \
+	sed -e "0,/__TUTERM_PREFIX=.*/s::__TUTERM_PREFIX='${PREFIX}':"   \
 		-e "0,/__TUTERM_VERSION=.*/s::__TUTERM_VERSION='${VERSION}':" \
 		tuterm > _build/tuterm
 	@# Install
