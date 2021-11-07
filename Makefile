@@ -1,5 +1,5 @@
 PREFIX  ?= /usr/local
-VERSION ?= 0.1.0
+VERSION ?= 0.3.0
 
 install:
 	@# Inject a __TUTERM_PREFIX variable definition into the tuterm script
