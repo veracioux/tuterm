@@ -157,6 +157,46 @@ __evaluate_command() {
     fi
 }
 
+# fake_home internal implementation
+__fake_home() {
+    if [ "$#" != 1 ]; then
+        echo -e "tuterm: error: fake_home takes exactly one argument"
+        exit 1
+    fi
+    local dest="$1"
+    if ! mkdir -p "$dest"; then
+        echo -e 'tuterm: error: could not create fake home!\nAborting.' >&2
+        exit 1
+    fi
+    readonly __FAKE_HOME_CREATED_BY_USER='true'
+    cd "$dest" || exit
+    readonly __FAKE_HOME="$dest"
+    export HOME="$dest"
+}
+
+# Create a fake home in a standard location
+__fake_home_standard() {
+    # Find all home<NUM> subdirectories under /tmp/tuterm/ and create the
+    # directory home<NUM+1>
+    local homedirs
+    homedirs="$(ls -d -1 /tmp/tuterm/home* 2>/dev/null)"
+    # Get last (sorted) directory of the form /tmp/tuterm/home*
+    local lasthome
+    lasthome="$(echo "$homedirs" | sort | tail -1)"
+    # Get the suffix number
+    # local num="$(echo "$lasthome" | sed 's:.*\([0-9]\+\)$:\1:')"
+    local num
+    num="$(echo "$lasthome" | sed 's:[^0-9]*\([0-9]*\)$:\1:')"
+    if [ -z "$homedirs" ]; then
+        local dest="/tmp/tuterm/home"
+    else
+        # Increment the number
+        ((num++))
+        local dest="/tmp/tuterm/home$num"
+    fi
+    __fake_home "$dest"
+}
+
 # ┏━━━━━━━━━━━━━━━┓
 # ┃ API FUNCTIONS ┃
 # ┗━━━━━━━━━━━━━━━┛
@@ -208,36 +248,7 @@ mode() {
 }
 
 fake_home() {
-    if [ "$#" -gt 0 ]; then
-        local dest="$1"
-        readonly __FAKE_HOME_CREATED_BY_USER='true'
-    else
-        # Find all home<NUM> subdirectories under /tmp/tuterm and create the
-        # directory home<NUM+1>
-        local homedirs
-        homedirs="$(ls -d -1 /tmp/tuterm/home* 2>/dev/null)"
-        # Get last (sorted) directory of the form /tmp/tuterm/home*
-        local lasthome
-        lasthome="$(echo "$homedirs" | sort | tail -1)"
-        # Get the suffix number
-        # local num="$(echo "$lasthome" | sed 's:.*\([0-9]\+\)$:\1:')"
-        local num
-        num="$(echo "$lasthome" | sed 's:[^0-9]*\([0-9]*\)$:\1:')"
-        if [ -z "$homedirs" ]; then
-            local dest="/tmp/tuterm/home"
-        else
-            # Increment the number
-            ((num++))
-            local dest="/tmp/tuterm/home$num"
-        fi
-    fi
-    if ! mkdir -p "$dest"; then
-        echo -e 'tuterm: error: could not create fake home!\nAborting.' >&2
-        exit 1
-    fi
-    cd "$dest" || exit
-    readonly __FAKE_HOME="$dest"
-    export HOME="$dest"
+    __fake_home "$@"
     fake_home() {
         echo -e "tuterm: error: fake home can only be created once!\nAborting."
         exit 1
@@ -531,7 +542,7 @@ source "$(realpath "$__ARG_FILE")"   # Load tuterm script
 
 clear
 if [ -z "$__FAKE_HOME_CREATED_BY_USER" ]; then
-    fake_home                      # For enhanced safety
+    __fake_home_standard                        # For enhanced safety
 fi
 
 # Dry run

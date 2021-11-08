@@ -1,5 +1,11 @@
 # Latest
 
+## Fixes
+
+- `fake_home` now checks number of arguments
+
+# Version 0.3.0
+
 ## Features
 
 - Added `SKIP` and `UNSKIP` for debugging

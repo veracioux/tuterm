@@ -55,8 +55,6 @@ configure() {
     COLOR_MESSAGE='1;32'
 }
 
-fake_home
-
 run() {
     mkdir dir
     touch file1 file2 .file3 dir/file
