@@ -120,5 +120,5 @@ Everyone is welcome to contribute.
 
 *A note: Tuterm is a simple program, so most issues or features should be a good choice for a beginner.*
 
-[collection]: https://github.com/HarisGusic/tuterm-collection
-[issues]: https://github.com/HarisGusic/tuterm/issues
+[collection]: https://github.com/veracioux/tuterm-collection
+[issues]: https://github.com/veracioux/tuterm/issues

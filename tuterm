@@ -368,7 +368,7 @@ __list_scripts() {
         echo "Tuterm scripts are usually installed by programs that support them."
         echo "You can also have a look this collection of scripts for various programs:"
         echo
-        echo "https://github.com/harisgusic/tuterm-collection"
+        echo "https://github.com/veracioux/tuterm-collection"
         return 1
     else
         echo "The following tuterm scripts are installed on your system:"
