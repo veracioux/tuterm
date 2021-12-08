@@ -24,11 +24,7 @@ uninstall:
 		"${DESTDIR}/${PREFIX}/share/man/man1/tuterm.1" \
 		"${DESTDIR}/${PREFIX}/share/tuterm"
 
-pacman:
-	mkdir -p _build/pacman
-	cp PKGBUILD _build/pacman/
-	cd _build/pacman; makepkg --skipinteg -f
-
 clean:
 	rm -rf _build
+	rm -rf _docker
 	rm -rf demo/*.cast
