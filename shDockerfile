@@ -1,0 +1,59 @@
+# Setup
+REQUIRE_ENV base
+[ -z "$base_ver" ] && base_ver="latest"
+[ -z "$ver" ] && ver="latest"
+
+FROM "$base:$base_ver"
+
+## Define distro-agnostic adduser command
+if [ "$base" = "archlinux" ]; then
+    adduser=(useradd --password "''")
+elif [ "$base" = "ubuntu" ]; then
+    adduser=(adduser --disabled-password)
+elif [ "$base" = "alpine" ]; then
+    adduser=(adduser -D)
+fi
+
+## Install dependencies
+if [ "$base" = "alpine" ]; then
+    # NOTE: GNU sed is required by make install
+    RUN apk add --no-cache make git bash sed
+elif [ "$base" = "ubuntu" ]; then
+    RUN apt-get update
+    RUN apt-get install -y make git
+elif [ "$base" = "archlinux" ]; then
+    RUN pacman -Sy --noconfirm make git
+fi
+
+WORKDIR /collection
+
+RUN "${adduser[@]}" user '&&' chown -R user .
+USER user
+RUN git clone --depth 1 https://github.com/veracioux/tuterm-collection /collection
+
+WORKDIR /app
+
+## Install tuterm
+USER root
+COPY . .
+RUN make install PREFIX=/usr
+
+WORKDIR /collection
+
+USER user
+CMD sh
+
+dash="-"
+underscore="_"
+if [ "$base_ver" = "latest" ]; then
+    base_ver=""
+    underscore=""
+fi
+if [ "$base" = "alpine" ]; then
+    base=""
+    dash=""
+fi
+
+TAG "tuterm:$ver$dash$base$underscore$base_ver"
+
+# vim: filetype=dockerfile
