@@ -4,8 +4,9 @@ DELAY_PROMPT=0.6
 COLOR_CMDLINE='1;33'
 COLOR_WARNING='1;91'
 COLOR_MESSAGE='1;32'
+TUTERM_SHELL='bash'
 
-# Command line prompt
+# Custom command line prompt (used if TUTERM_SHELL is unset)
 prompt() {
     echo -n "$TUTERM_NAME \$ "
 }

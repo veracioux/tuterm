@@ -35,9 +35,18 @@ __TOTAL_COMMAND_COUNT=0
 # ┃ Helper functions ┃
 # ┗━━━━━━━━━━━━━━━━━━┛
 
+# Call the python PTY helper module
+__pty() {
+    if [ "$__TUTERM_VERSION" = "develop" ]; then
+        "$(dirname "$BASH_SOURCE")"/pty_driver.py --shell "$TUTERM_SHELL" "$@"
+    else
+        "$__TUTERM_PREFIX/lib/tuterm/pty_driver.py" --shell "$TUTERM_SHELL" "$@"  # TODO test
+    fi
+}
+
 # Print $* as if the user were typing it on a keyboard (using DELAY* variables)
 # --fast option makes the output instantaneous
-__print_out() {
+__print_slowly() {
     if option 'fast' || [ -n "$__ENV_FAST" ]; then
         # Print it out instantaneously
         echo -n "$*"
@@ -113,6 +122,9 @@ __print_progress_indicator() {
     tput rc
 }
 
+# Print a shell prompt, print the expected commandline, then wait for the user
+# to repeat the same commandline. Re-prompt the user until the correct
+# commandline is typed in.
 __evaluate_command() {
     [ -n "$__SKIP_ACTIVE" ] && return 0
 
@@ -121,40 +133,33 @@ __evaluate_command() {
     command_length=$(expr length "$*")
     __print_progress_indicator "$command_length"
 
-    prompt
     stty -echo
-    if ! option 'fast' && [ -z "$__ENV_FAST" ]; then
-        sleep "$DELAY_PROMPT"               # Wait a small delay after prompt
-    fi
-    if ! mode 'demo'; then
-        color cmdline
-    fi
-    __print_out "$*"; color 0; echo         # Type out the command line
-    stty echo
-    if mode 'tutorial'; then
-        prompt
 
-        # FIXME this is a temporary solution to add keybindings
-        bind '"\e[24;8~":kill-whole-line'                   2>/dev/null
-        bind -x '"\e[23;8~":"prompt"'                       2>/dev/null
-        bind '"\e[Z":"\e[24;8~.\e[24;8~\e[23;8~'"$*"'
-"'   2>/dev/null
+    TUTERM_NAME="$TUTERM_NAME" XDG_CONFIG_HOME="$__ACTUAL_HOME/.config" \
+        __pty print_expected \
+            --shell "$TUTERM_SHELL" --delay "$DELAY" --delay-sep "$DELAY_SEP" \
+            --delay-prompt "$DELAY_PROMPT" \
+            $(mode 'demo' && echo --fast || echo --color "$COLOR_CMDLINE") \
+            -- "$*"
 
-        local user_input
-        user_input=''
-        read -er user_input                                 # Read user input
-
-        if [ "$user_input" != "$*" ]; then                  # Oops, wrong input
-            color warning >&2
-            echo -e "Wrong command, try again" >&2
-            color 0 >&2
-            local fast_old
-            fast_old="$__OPT_FAST"          # Backup old value of --fast option
-            set_option fast 'true'          # Override it temporarily
-            evaluate "$@"                   # Verify user input
-            set_option fast "$fast_old"     # Revert to old value of --fast
+    while :; do
+        if TUTERM_NAME="$TUTERM_NAME" XDG_CONFIG_HOME="$__ACTUAL_HOME/.config" \
+            __pty evaluate --shell "$TUTERM_SHELL" -- "$*"
+        then
+            echo
+            return 0
         fi
-    fi
+        echo
+        color warning >&2
+        echo -e "Wrong command, try again" >&2
+        color 0 >&2
+    done
+    stty echo
+    return
+    # FIXME this is a temporary solution to add keybindings
+    # bind '"\e[24;8~":kill-whole-line'                   2>/dev/null
+    # bind -x '"\e[23;8~":"prompt"'                       2>/dev/null
+    # bind '"\e[Z":"\e[24;8~.\e[24;8~\e[23;8~'"$*"' "'   2>/dev/null
 }
 
 # fake_home internal implementation
@@ -168,6 +173,7 @@ __fake_home() {
         echo -e 'tuterm: error: could not create fake home!\nAborting.' >&2
         exit 1
     fi
+    __ACTUAL_HOME="$HOME"
     readonly __FAKE_HOME_CREATED_BY_USER='true'
     cd "$dest" || exit
     readonly __FAKE_HOME="$dest"
@@ -540,6 +546,18 @@ source "$(realpath "$__ARG_FILE")"   # Load tuterm script
 [ -z "$DELAY_PROMPT" ]  && DELAY_PROMPT="$DELAY"
 [ -z "$TUTERM_NAME" ]   && TUTERM_NAME="$(basename "$TUTERM_SCRIPT")"
 
+# If TUTERM_SHELL is invalid, set it to a default fake shell
+if ! which "$(printf '%s\n' $(echo $TUTERM_SHELL) | head -1)" 2>/dev/null; then
+    # Define a function '__tuterm_prompt' identical to 'prompt'
+    eval "__tuterm_prompt() $(declare -f prompt | tail +2)"
+    export -f __tuterm_prompt
+    if [ "$__TUTERM_VERSION" = "develop" ]; then
+        TUTERM_SHELL="$(dirname "$BASH_SOURCE")/fake_shell.sh"
+    else
+        TUTERM_SHELL="$__TUTERM_PREFIX/lib/tuterm/fake_shell.sh"
+    fi
+fi
+
 clear
 if [ -z "$__FAKE_HOME_CREATED_BY_USER" ]; then
     __fake_home_standard                        # For enhanced safety
@@ -568,6 +586,8 @@ fi
 evaluate() { __evaluate_command "$@"; }
 sleep() { __sleep_modal "$@"; }
 exit() { builtin exit; }
+
+export TUTERM_ENVIRONMENT="true"
 
 run
 
