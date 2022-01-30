@@ -10,8 +10,13 @@ import time
 import re
 import subprocess as sp
 from threading import Timer
+import signal
 
-# Utilities
+signal.signal(signal.SIGINT, lambda _, __: sys.exit(1))
+
+# ┏━━━━━━━━━━━┓
+# ┃ Utilities ┃
+# ┗━━━━━━━━━━━┛
 
 class _Timer():
     def __init__(self, interval, function):
@@ -31,9 +36,9 @@ class _Timer():
 def is_separator(char: str):
     return not re.match("[a-zA-Z0-9]", char)
 
-def add_common_options(parser):
-    parser.add_argument("expected")
-    parser.add_argument("--shell")
+# ┏━━━━━━━━━━┓
+# ┃ Commands ┃
+# ┗━━━━━━━━━━┛
 
 def _print_expected(args):
     # Fill missing arguments with fallback values
@@ -69,10 +74,17 @@ def _print_expected(args):
                     # is received
                     args.expected = args.expected[1:]
                     sp.run(["sleep", args.delay_sep if is_separator(char) else args.delay])
-            os.kill(child_pid, 9)
+            os.kill(child_pid, signal.SIGKILL)
+
+        def interrupt(_, __):
+            """Print remaining cmdline prompt on exit."""
+            print(args.expected, flush=True)
+            os.kill(os.getpid(), signal.SIGKILL)
+
         try:
             timer = _Timer(BASE_DELAY, print_slowly)
-            # Print data coming from the shell
+            signal.signal(signal.SIGINT, interrupt)
+            # Print data coming from the child shell
             while data := os.read(fd, 1024):
                 timer.reset()
                 print(data.decode(), end='')
@@ -100,7 +112,11 @@ def _evaluate(args):
         if data == b"\x7f":  # Backspace deletes one character
             vars.data = vars.data[:-1]
         elif data == b"\x1b":
-            return "\u25A1".encode()
+            if os.read(fd, 1) == b"[" and os.read(fd, 1) == b"Z":
+                print("\033[0;1m", args.expected, "\033[0m", sep="", end="")
+                sys.exit(0)
+            else:
+                return "\u25A1".encode()
         elif data == b"\x03":
             sys.exit(1)
         elif data not in [b"\r", b"\n"]:
@@ -112,8 +128,13 @@ def _evaluate(args):
         return data
     pty.spawn(args.shell, stdin_read=stdin_read)
 
+# ┏━━━━━━━━━━━━━━━━━━┓
+# ┃ SETUP CLI PARSER ┃
+# ┗━━━━━━━━━━━━━━━━━━┛
+
 parser = argparse.ArgumentParser()
 parser.add_argument("--shell")
+parser.set_defaults(func=lambda _: print("You must specify a subcommand!", file=sys.stderr))
 sub = parser.add_subparsers(title="commands", metavar="")
 print_expected = sub.add_parser(
     "print_expected", help="Print shell prompt and the expected command"
@@ -123,6 +144,11 @@ evaluate = sub.add_parser(
         "Print shell prompt and wait for the user to type the expected command"
     )
 )
+
+def add_common_options(parser):
+    parser.add_argument("expected")
+    parser.add_argument("--shell", default="bash")
+
 # SETUP 'print_expected' command
 add_common_options(print_expected)
 print_expected.add_argument("--prompt", action="store_true", help="Display shell prompt")

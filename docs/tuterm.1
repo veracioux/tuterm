@@ -135,7 +135,7 @@ Configuration files are loaded in the following order:
 
 .SS Configuration variables
 
-\fBSHELL\fR \- which shell's prompt to use (TODO this is a planned feature)
+\fBTUTERM_SHELL\fR \- which shell's prompt to use
 
 \fBDELAY\fR \- time it takes to type out a character
 
@@ -185,7 +185,9 @@ recommended in order to get consistent behavior.
 
 .SH ENVIRONMENT
 The behavior of tuterm scripts is configured using environment or shell
-variables.
+variables. When tuterm calls your custom shell (if you have configured one using
+\fBTUTERM_SHELL\fR), the \fBTUTERM_ENVIRONMENT\fR variable will be set to
+\fItrue\fR.
 
 \fBNOTE:\fR All environment variables available to tuterm will be available to
 tuterm scripts as well.
@@ -266,7 +268,7 @@ The \fI$HOME\fR variable will be set (and exported) to the fake home path.
 
     \fBNOTES:\fR
 
-        - This function has no effect when called from inside the \fBrun\fR
+        - This function won't work if called from inside the \fBrun\fR
           function. Call it from the outside scope.
         - For safety reasons, this function can only be called once.
         - The fake home will not be deleted automatically
@@ -310,7 +312,7 @@ If any of the specified dependencies is not satisfied, print an error and exit.
 
 .SS
 User-overridable functions
-\fBprompt\fR \- custom command line prompt
+\fBprompt\fR \- custom command line prompt (used if \fBTUTERM_SHELL\fR is unset)
 
 \fBconfigure\fR \- configuration for the script
 

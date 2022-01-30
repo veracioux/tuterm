@@ -37,11 +37,25 @@ __TOTAL_COMMAND_COUNT=0
 
 # Call the python PTY helper module
 __pty() {
+    # If the pty driver writes shell commands to this, the shell will source the
+    # commands when the pty driver command exits. This is a basic form of
+    # inter-process communication.
+    local __TUTERM_EVAL_FILE
+    export __TUTERM_EVAL_FILE="$(mktemp /tmp/tuterm_source.XXXXXXXXXXXXXXXXXXXX)"
+    echo > "$__TUTERM_EVAL_FILE"
+
     if [ "$__TUTERM_VERSION" = "develop" ]; then
-        "$(dirname "$BASH_SOURCE")"/pty_driver.py --shell "$TUTERM_SHELL" "$@"
+        python "$(dirname "$BASH_SOURCE")/pty_wrapper.py" \
+            --shell "$TUTERM_SHELL" \
+            "$@"
     else
-        "$__TUTERM_PREFIX/lib/tuterm/pty_driver.py" --shell "$TUTERM_SHELL" "$@"  # TODO test
+        python "$__TUTERM_PREFIX/lib/tuterm/pty_wrapper.py" \
+            --shell "$TUTERM_SHELL" "$@" \
+            "$@"
     fi
+    status="$?"
+    source "$__TUTERM_EVAL_FILE"
+    return "$status"
 }
 
 # Print $* as if the user were typing it on a keyboard (using DELAY* variables)
@@ -139,9 +153,10 @@ __evaluate_command() {
         __pty print_expected \
             --shell "$TUTERM_SHELL" --delay "$DELAY" --delay-sep "$DELAY_SEP" \
             --delay-prompt "$DELAY_PROMPT" \
-            $(mode 'demo' && echo --fast || echo --color "$COLOR_CMDLINE") \
+            $(mode 'tutorial' && echo --color "$COLOR_CMDLINE") \
             -- "$*"
 
+    mode 'tutorial' &&
     while :; do
         if TUTERM_NAME="$TUTERM_NAME" XDG_CONFIG_HOME="$__ACTUAL_HOME/.config" \
             __pty evaluate --shell "$TUTERM_SHELL" -- "$*"
@@ -154,12 +169,8 @@ __evaluate_command() {
         echo -e "Wrong command, try again" >&2
         color 0 >&2
     done
+    __print_progress_indicator "$command_length"
     stty echo
-    return
-    # FIXME this is a temporary solution to add keybindings
-    # bind '"\e[24;8~":kill-whole-line'                   2>/dev/null
-    # bind -x '"\e[23;8~":"prompt"'                       2>/dev/null
-    # bind '"\e[Z":"\e[24;8~.\e[24;8~\e[23;8~'"$*"' "'   2>/dev/null
 }
 
 # fake_home internal implementation
@@ -545,7 +556,7 @@ source "$(realpath "$__ARG_FILE")"   # Load tuterm script
 [ -z "$TUTERM_NAME" ]   && TUTERM_NAME="$(basename "$TUTERM_SCRIPT")"
 
 # If TUTERM_SHELL is invalid, set it to a default fake shell
-if ! which "$(printf '%s\n' $(echo $TUTERM_SHELL) | head -1)" 2>/dev/null; then
+if ! which "$(printf '%s\n' $(echo $TUTERM_SHELL) | head -1)" >/dev/null 2>&1; then
     # Define a function '__tuterm_prompt' identical to 'prompt'
     eval "__tuterm_prompt() $(declare -f prompt | tail +2)"
     export -f __tuterm_prompt

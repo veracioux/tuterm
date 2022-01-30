@@ -16,6 +16,7 @@ install:
 			 "${DESTDIR}${PREFIX}/share/tuterm/scripts"
 	install -Dm755 _build/tuterm    "${DESTDIR}${PREFIX}/bin/"
 	install -Dm755 pty_driver.py    "${DESTDIR}${PREFIX}/lib/tuterm/"
+	install -Dm755 pty_wrapper.py   "${DESTDIR}${PREFIX}/lib/tuterm/"
 	install -Dm755 fake_shell.sh    "${DESTDIR}${PREFIX}/lib/tuterm/"
 	install -Dm644 docs/tuterm.1    "${DESTDIR}${PREFIX}/share/man/man1/"
 	install -Dm644 config.sh        "${DESTDIR}${PREFIX}/share/tuterm/"
