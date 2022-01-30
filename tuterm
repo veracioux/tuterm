@@ -174,24 +174,24 @@ __fake_home() {
         exit 1
     fi
     __ACTUAL_HOME="$HOME"
-    readonly __FAKE_HOME_CREATED_BY_USER='true'
     cd "$dest" || exit
     readonly __FAKE_HOME="$dest"
     export HOME="$dest"
+    __fake_home() {
+        echo -e "tuterm: error: fake home can only be created once!\nAborting." >&2
+        exit 1
+    }
 }
 
 # Create a fake home in a standard location
 __fake_home_standard() {
     # Find all home<NUM> subdirectories under /tmp/tuterm/ and create the
     # directory home<NUM+1>
-    local homedirs
+    local homedirs lasthome num
     homedirs="$(ls -d -1 /tmp/tuterm/home* 2>/dev/null)"
     # Get last (sorted) directory of the form /tmp/tuterm/home*
-    local lasthome
     lasthome="$(echo "$homedirs" | sort | tail -1)"
     # Get the suffix number
-    # local num="$(echo "$lasthome" | sed 's:.*\([0-9]\+\)$:\1:')"
-    local num
     num="$(echo "$lasthome" | sed 's:[^0-9]*\([0-9]*\)$:\1:')"
     if [ -z "$homedirs" ]; then
         local dest="/tmp/tuterm/home"
@@ -254,11 +254,9 @@ mode() {
 }
 
 fake_home() {
+    [ -z "$__FAKE_HOME_CREATED_BY_USER" ] &&
+        readonly __FAKE_HOME_CREATED_BY_USER='true'
     __fake_home "$@"
-    fake_home() {
-        echo -e "tuterm: error: fake home can only be created once!\nAborting."
-        exit 1
-    }
 }
 
 # Set color for printing. See manpage for details.
@@ -346,7 +344,7 @@ __ARG_FILE=''
 __SKIP_ACTIVE=''                # Flag used by the SKIP and UNSKIP functions
 
 __FAKE_HOME=''
-__FAKE_HOME_CREATED_BY_USER=''
+__FAKE_HOME_CREATED_BY_USER=''  # ... rather than automatically
 
 # ┏━━━━━━━━━━━━━━━━━━━┓
 # ┃ PARSE CLI OPTIONS ┃
@@ -526,7 +524,7 @@ fi
 
 # Exit cleanup
 __on_exit() {
-    # Remove fake home if it was created automatically, not by the user
+    # Remove fake home if it was created automatically, and not by the user
     if [ -z "$__FAKE_HOME_CREATED_BY_USER" ]; then
         rm -rf "$__FAKE_HOME"
     fi
@@ -588,6 +586,11 @@ sleep() { __sleep_modal "$@"; }
 exit() { builtin exit; }
 
 export TUTERM_ENVIRONMENT="true"
+
+fake_home() {
+    echo "tuterm: error: Fake home cannot be created from inside the 'run' function" >&2
+    exit 1
+}
 
 run
 
