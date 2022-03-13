@@ -92,6 +92,14 @@ asciinema rec -c 'tuterm ls_tutorial --mode demo' ls_tutorial.cast
 
 # Installation
 
+## Arch Linux
+
+```shell
+[aur-helper] -S tuterm
+```
+
+## From source
+
 After cloning this repository or downloading the source code, simply run
 
 ```shell
