@@ -25,10 +25,10 @@ configure() {}
 run() {}
 
 # To print the expected input (and in tutorial mode wait for the user's input):
- cmdline <command>
+cmdline <command>
 
- # To print the expected input without actually executing the command:
- evaluate <command>
+# To print the expected input without actually executing the command:
+evaluate <command>
 
 # In tutorial mode, to print a message to the user:
 message "your message"
