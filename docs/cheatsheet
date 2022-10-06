@@ -1,9 +1,9 @@
 # Using tuterm
-# To list installed tuterm scripts
+# To list installed tuterm scripts:
 tuterm --list
 
 # To run a tutorial in interactive mode:
-tuterm ./<SCRIPT_NAME>
+tuterm ./<SCRIPT_NAME> --mode tutorial
 
 # To run a tutorial in demo mode:
 tuterm ./<SCRIPT_NAME> --mode demo
@@ -11,7 +11,7 @@ tuterm ./<SCRIPT_NAME> --mode demo
 # To run a tutorial without typing characters in real time:
 tuterm ./<SCRIPT_NAME> --fast
 
-# To view your progress while you are running a tutorial
+# To view your progress while you are running a tutorial:
 tuterm ./<SCRIPT_NAME> --progress
 
 # Writing tutorials and demos
@@ -21,7 +21,7 @@ depends <executable>
 # To define the configuration for the script:
 configure() {}
 
-# To define the script for the tutorial:
+# Tutorial script function:
 run() {}
 
 # To print the expected input (and in tutorial mode wait for the user's input):
@@ -42,11 +42,11 @@ option 'option'
 # To check if the user selected a specific mode:
 mode '(tutorial|demo)'
 
-# To user and cd to a fake home directory:
+# To use and cd to a fake home directory:
 fake_home
 
 # To set the output color:
-color <ANSI color sequence>
+color <ANSI_color_sequence>
 
 # To manually set options:
 set_option option
@@ -54,7 +54,7 @@ set_option option
 # To pause the tutorial for a specific number of seconds:
 sleep <number><s>
 
-# To skip messages, prompts, etc.:
+# To skip messages, prompts, etc., for debugging:
 SKIP
 
 # To undo the effects of SKIP:
