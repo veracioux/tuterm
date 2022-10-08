@@ -1,0 +1,61 @@
+# Using tuterm
+# To list installed tuterm scripts:
+tuterm --list
+
+# To run a tutorial in interactive mode:
+tuterm ./[<script_name> | <script_path>] --mode tutorial
+
+# To run a tutorial in demo mode:
+tuterm ./[<script_name> | <script_path>] --mode demo
+
+# To run a tutorial without typing characters in real time:
+tuterm ./[<script_name> | <script_path>] --fast
+
+# To view your progress while you are running a tutorial:
+tuterm ./[<script_name> | <script_path>] --progress
+
+# Writing tutorials and demos
+# To declare executables as dependencies:
+depends <executable>
+
+# To define the configuration for the script:
+configure() {}
+
+# Tutorial script function where your script is defined:
+run() {}
+
+# To print the expected input, wait for the user's input (in tutorial mode), and execute <command>:
+cmdline <command>
+
+# To print and evaluate the expected input without actually executing the command:
+evaluate <command>
+
+# In tutorial mode, to print a message to the user:
+message "your message"
+
+# To print a message to the user (tutorial and demo mode):
+Message "your message"
+
+# To check if the user passed an option to tuterm when starting a tutorial:
+option '<OPTION>'
+
+# To check if the user selected a specific mode:
+mode '(tutorial|demo)'
+
+# To use and cd to a fake home directory:
+fake_home
+
+# To set the output color:
+color <ANSI_color_sequence>
+
+# To manually set options:
+set_option <OPTION>
+
+# To pause the script (same as UNIX sleep, but ignored when --fast is enabled):
+sleep <delay>
+
+# To skip messages, prompts, etc., for debugging:
+SKIP
+
+# To undo the effects of SKIP:
+UNSKIP
