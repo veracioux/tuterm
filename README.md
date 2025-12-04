@@ -11,7 +11,7 @@
 
 <p align="center">
   <a href="https://asciinema.org/a/427932" target="_blank">
-    <img width="75%" src="https://gist.github.com/veracioux/66336d488e8d87c7b3fb696c5dbd93d1/raw/4b8bc0b043faf166abc92e12fc0bfb5acea55345/tuterm-demo.svg" />
+    <img width="75%" src="https://gist.githubusercontent.com/veracioux/66336d488e8d87c7b3fb696c5dbd93d1/raw/4b8bc0b043faf166abc92e12fc0bfb5acea55345/tuterm-demo.svg" />
   </a>
 </p>
 
@@ -31,7 +31,7 @@ Key features:
 
 <p align="center">
   <a href="https://asciinema.org/a/428011" target="_blank">
-    <img src="https://gist.github.com/veracioux/66336d488e8d87c7b3fb696c5dbd93d1/raw/6b79b61de44e11e561c67b8f91446f14895e85ae/tuterm-customization-demo.svg" />
+    <img src="https://gist.githubusercontent.com/veracioux/66336d488e8d87c7b3fb696c5dbd93d1/raw/6b79b61de44e11e561c67b8f91446f14895e85ae/tuterm-customization-demo.svg" />
   </a>
 </p>
 
@@ -86,7 +86,7 @@ asciinema rec -c 'tuterm ls_tutorial --mode demo' ls_tutorial.cast
 
 <p align="center">
   <a href="https://asciinema.org/a/XT938YRCtcrPAhnCkd5H6MsS4" target="_blank">
-    <img width="50%" src="https://gist.github.com/veracioux/66336d488e8d87c7b3fb696c5dbd93d1/raw/4b8bc0b043faf166abc92e12fc0bfb5acea55345/tuterm-example-ls.svg" />
+    <img width="50%" src="https://gist.githubusercontent.com/veracioux/66336d488e8d87c7b3fb696c5dbd93d1/raw/4b8bc0b043faf166abc92e12fc0bfb5acea55345/tuterm-example-ls.svg" />
   </a>
 </p>
 
